@@ -43,6 +43,12 @@
             setInterval(updateRealtimeStats, 5000);
             
             showToast('SecureSphere fully loaded', 'success');
+            console.log('✨ SecureSphere fully loaded and ready!');
+            
+            // Debug: Log all clickable elements
+            const allButtons = document.querySelectorAll('button, [role="button"], [role="tab"]');
+            console.log(`🔘 Total clickable elements found: ${allButtons.length}`);
+            console.log('📋 Sample buttons:', allButtons.slice(0, 5).map(b => ({ class: b.className, id: b.id, text: b.textContent?.slice(0, 20) })));
 
             // Register service worker to accelerate repeat loads and cache API responses
             if ('serviceWorker' in navigator) {
