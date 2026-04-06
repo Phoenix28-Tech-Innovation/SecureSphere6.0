@@ -35,6 +35,16 @@
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="Style.css">
+    <link rel="preload" href="app.js" as="script">
+    <script>
+        // Hydrate cached fragments early so app.js can render immediately on DOMContentLoaded
+        try {
+            const _raw = localStorage.getItem('ss_cachedHTML_v1');
+            if (_raw) window.__ss_cachedHTML = JSON.parse(_raw);
+        } catch (e) {
+            console.warn('Failed to read cached UI fragments', e);
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="api-client.js"></script>
  
@@ -60,53 +70,57 @@
         <div class="nav-item-liquid" data-tab="analytics"><i class="fas fa-chart-line text-xl"></i><span class="nav-tooltip">Analytics</span></div>
     </nav>
 
-    <!-- MOBILE NAV Enhanced with Floating Action Button -->
+    <!-- MOBILE NAV Enhanced with Floating Action Button - Premium iOS Design -->
     <div class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <!-- Wave background animation -->
+        <!-- Premium Wave background animation -->
         <div class="nav-wave nav-wave-1"></div>
         <div class="nav-wave nav-wave-2"></div>
         <div class="nav-wave nav-wave-3"></div>
         
-        <div class="mobile-nav-container">
-            <div class="mobile-nav-item-liquid active" data-tab="dashboard" style="--index: 0;">
+        <!-- Glow backdrop -->
+        <div class="mobile-nav-backdrop-glow"></div>
+        
+        <!-- Navigation Items -->
+        <div class="mobile-nav-item-liquid active" data-tab="dashboard" style="--index: 0;">
+            <div class="nav-item-icon-wrapper">
                 <i class="fas fa-chart-pie"></i>
-                <span>Dashboard</span>
-                <div class="mobile-nav-indicator"></div>
             </div>
-            <div class="mobile-nav-item-liquid" data-tab="server" style="--index: 1;">
-                <i class="fas fa-server"></i>
-                <span>Server</span>
-                <div class="mobile-nav-indicator"></div>
-            </div>
-            <div class="mobile-nav-item-liquid" data-tab="security" style="--index: 2;">
-                <i class="fas fa-shield-alt"></i>
-                <span>Security</span>
-                <div class="mobile-nav-indicator"></div>
-            </div>
-            <div class="mobile-nav-item-liquid" data-tab="database" style="--index: 3;">
-                <i class="fas fa-database"></i>
-                <span>Database</span>
-                <div class="mobile-nav-indicator"></div>
-            </div>
-            <div class="mobile-nav-item-liquid" data-tab="backups" style="--index: 4;">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span>Backups</span>
-                <div class="mobile-nav-indicator"></div>
-            </div>
-            <!-- 'More' overflow - contains Logs and other secondary actions -->
-            <!-- removed 'More' overflow per request -->
-            <div class="mobile-nav-item-liquid" data-tab="settings" style="--index: 6;">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-                <div class="mobile-nav-indicator"></div>
-            </div>
+            <span class="nav-item-label">Dashboard</span>
         </div>
-
-        <!-- More menu removed per request -->
+        <div class="mobile-nav-item-liquid" data-tab="server" style="--index: 1;">
+            <div class="nav-item-icon-wrapper">
+                <i class="fas fa-server"></i>
+            </div>
+            <span class="nav-item-label">Server</span>
+        </div>
+        <div class="mobile-nav-item-liquid" data-tab="security" style="--index: 2;">
+            <div class="nav-item-icon-wrapper">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span class="nav-item-label">Security</span>
+        </div>
+        <div class="mobile-nav-item-liquid" data-tab="database" style="--index: 3;">
+            <div class="nav-item-icon-wrapper">
+                <i class="fas fa-database"></i>
+            </div>
+            <span class="nav-item-label">Database</span>
+        </div>
+        <div class="mobile-nav-item-liquid" data-tab="backups" style="--index: 4;">
+            <div class="nav-item-icon-wrapper">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <span class="nav-item-label">Backups</span>
+        </div>
+        <div class="mobile-nav-item-liquid" data-tab="settings" style="--index: 5;">
+            <div class="nav-item-icon-wrapper">
+                <i class="fas fa-cog"></i>
+            </div>
+            <span class="nav-item-label">Settings</span>
+        </div>
     </div>
 
-    <!-- Floating Action Button (FAB) - Outside mobile-bottom-nav -->
-    <button class="fab-button" id="fabButton" title="Quick actions">
+    <!-- Floating Action Button (FAB) - Outside mobile-bottom-nav (mobile only) -->
+    <button class="fab-button md:hidden" id="fabButton" title="Quick actions">
         <i class="fas fa-plus"></i>
     </button>
 

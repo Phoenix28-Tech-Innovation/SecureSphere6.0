@@ -1,17 +1,21 @@
 
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', async function() {
-            showToast('SecureSphere initializing...', 'info');
+            // Fast hydrate from saved cache if available (instant UI on refresh)
+            if (window.__ss_cachedHTML && window.__ss_cachedHTML.fragments) {
+                try { applyCachedFragments(window.__ss_cachedHTML.fragments); showToast('Loaded UI from cache', 'info'); } catch(e) { console.warn('Cache hydration error', e); showToast('SecureSphere initializing...', 'info'); }
+            } else {
+                showToast('SecureSphere initializing...', 'info');
+            }
             
-            // Check if backend is available
-            try {
-                const healthCheck = await fetch('http://localhost:5000/health');
-                if (!healthCheck.ok) throw new Error('Backend not responding');
-                showToast('Backend connected', 'success');
-            } catch (error) {
+            // Check backend availability in background (non-blocking)
+            fetch('http://localhost:5000/health', { cache: 'no-store' }).then(res => {
+                if (res && res.ok) showToast('Backend connected', 'success');
+            }).catch(err => {
+                // Don't block UI; show a soft warning.
                 showToast('⚠️ Backend not available - using demo mode', 'warning');
                 console.log('Running in demo mode - backend not connected at localhost:5000');
-            }
+            });
             
             // Initialize with real or demo data
             await initializeAllData();
@@ -23,6 +27,17 @@
             setInterval(updateRealtimeStats, 5000);
             
             showToast('SecureSphere fully loaded', 'success');
+
+            // Register service worker to accelerate repeat loads and cache API responses
+            if ('serviceWorker' in navigator) {
+                try {
+                    navigator.serviceWorker.register('/sw.js').then(reg => {
+                        console.log('Service worker registered:', reg.scope);
+                    }).catch(err => console.warn('Service worker registration failed:', err));
+                } catch (e) {
+                    console.warn('Service worker registration error', e);
+                }
+            }
             
             // Prevent unwanted scroll on mobile
             let lastTouchY = 0;
@@ -62,51 +77,97 @@
             }
         }
 
+        // Quick cache hydration helpers (fast UI on refresh)
+        function applyCachedFragments(fragments) {
+            if (!fragments || typeof fragments !== 'object') return;
+            Object.keys(fragments).forEach(id => {
+                try {
+                    const el = document.getElementById(id);
+                    if (el && typeof fragments[id] === 'string') el.innerHTML = fragments[id];
+                } catch (e) {
+                    console.warn('Failed to apply cached fragment for', id, e);
+                }
+            });
+        }
+
+        function saveCachedFragments() {
+            try {
+                const keys = [
+                    'topProcessesList','recentAlertsList','serverTableBody','recentBackupsBody',
+                    'webServicesList','dbServicesList','securityToolsList','securityUpdatesList',
+                    'systemUpdatesList','vulnerabilitiesBody','recentThreatsBody'
+                ];
+                const fragments = {};
+                keys.forEach(k => {
+                    const el = document.getElementById(k);
+                    if (el) fragments[k] = el.innerHTML;
+                });
+                const payload = { ts: Date.now(), fragments };
+                try { localStorage.setItem('ss_cachedHTML_v1', JSON.stringify(payload)); } catch(e) { /* ignore quota errors */ }
+            } catch (e) {
+                console.warn('saveCachedFragments failed', e);
+            }
+        }
+
         // ==================== DATA POPULATION FUNCTIONS ====================
         async function initializeAllData() {
-            // Try to load real data from API, fallback to demo data
+            // Fetch all primary endpoints in parallel for faster startup
+            const promises = [
+                systemAPI.getStats(),
+                systemAPI.getProcesses(5),
+                serversAPI.getAll(),
+                backupsAPI.getAll(),
+                securityAPI.getAlerts(3)
+            ];
+
+            const [statsRes, processesRes, serversRes, backupsRes, alertsRes] = await Promise.allSettled(promises);
+
+            const stats = statsRes.status === 'fulfilled' ? statsRes.value : null;
+            const processes = processesRes.status === 'fulfilled' ? processesRes.value : null;
+            const servers = serversRes.status === 'fulfilled' ? serversRes.value : null;
+            const backups = backupsRes.status === 'fulfilled' ? backupsRes.value : null;
+            const alerts = alertsRes.status === 'fulfilled' ? alertsRes.value : null;
+
+            // Update display with real data if available
             try {
-                const stats = await systemAPI.getStats();
-                const processes = await systemAPI.getProcesses(5);
-                const servers = await serversAPI.getAll();
-                const backups = await backupsAPI.getAll();
-                const alerts = await securityAPI.getAlerts(3);
-                
-                // Update display with real data if available
                 if (stats && stats.cpu) {
-                    document.getElementById('cpuValue').innerHTML = Math.round(stats.cpu.percent) + '%';
-                    document.getElementById('memoryValue').innerHTML = (stats.memory.used_mb / 1024).toFixed(1) + ' GB';
-                    document.getElementById('diskValue').innerHTML = stats.disk.used_gb.toFixed(0) + ' GB';
-                    document.getElementById('networkValue').innerHTML = (stats.network.bytes_recv / 1000000000).toFixed(2) + ' Gbps';
+                    const cpuEl = document.getElementById('cpuValue');
+                    if (cpuEl) cpuEl.innerHTML = Math.round(stats.cpu.percent) + '%';
+                    const memEl = document.getElementById('memoryValue');
+                    if (memEl) memEl.innerHTML = (stats.memory.used_mb / 1024).toFixed(1) + ' GB';
+                    const diskEl = document.getElementById('diskValue');
+                    if (diskEl) diskEl.innerHTML = stats.disk.used_gb.toFixed(0) + ' GB';
+                    const netEl = document.getElementById('networkValue');
+                    if (netEl) netEl.innerHTML = (stats.network.bytes_recv / 1000000000).toFixed(2) + ' Gbps';
                 }
-                
+
                 // Load real processes
                 if (processes && processes.processes) {
                     let processesHTML = '';
                     processes.processes.slice(0, 5).forEach(proc => {
                         processesHTML += `<div class="flex justify-between"><span>${proc.name}</span><span>${proc.cpu_percent.toFixed(1)}%</span></div>`;
                     });
-                    if (processesHTML) document.getElementById('topProcessesList').innerHTML = processesHTML;
+                    const pEl = document.getElementById('topProcessesList'); if (pEl && processesHTML) pEl.innerHTML = processesHTML;
                 }
-                
+
                 // Load real servers
                 if (servers && servers.length) {
                     let serverHTML = '';
                     servers.forEach(server => {
                         serverHTML += `<tr><td>${server.hostname}</td><td>${server.ip}</td><td><span class="badge-liquid bg-green-200/40">${server.status}</span></td><td>--</td><td>${server.memory}/GB</td><td>${server.uptime || '45'}d</td><td><button class="liquid-btn text-xs px-3 py-1 manage-server" data-server="${server.id}">Manage</button></td></tr>`;
                     });
-                    if (serverHTML) document.getElementById('serverTableBody').innerHTML = serverHTML;
+                    const sEl = document.getElementById('serverTableBody'); if (sEl && serverHTML) sEl.innerHTML = serverHTML;
                 }
-                
+
                 // Load real backups
                 if (backups && backups.backups) {
                     let backupHTML = '';
                     backups.backups.slice(0, 3).forEach(backup => {
                         backupHTML += `<tr><td>${backup.id}</td><td>${backup.type}</td><td>${backup.size}GB</td><td>${backup.source}</td><td><span class="badge-liquid bg-green-200/40">${backup.status}</span></td><td><button class="liquid-btn text-xs px-2 restore-backup">Restore</button></td></tr>`;
                     });
-                    if (backupHTML) document.getElementById('recentBackupsBody').innerHTML = backupHTML;
+                    const bEl = document.getElementById('recentBackupsBody'); if (bEl && backupHTML) bEl.innerHTML = backupHTML;
                 }
-                
+
                 // Load real alerts
                 if (alerts && alerts.length) {
                     let alertsHTML = '';
@@ -114,11 +175,10 @@
                         const badgeColor = alert.severity === 'critical' ? 'red' : alert.severity === 'high' ? 'orange' : 'yellow';
                         alertsHTML += `<div class="flex items-center gap-2"><span class="badge-liquid bg-${badgeColor}-200/40">${alert.severity.toUpperCase()}</span> <span class="text-sm">${alert.title}</span><span class="text-xs ml-auto">now</span></div>`;
                     });
-                    if (alertsHTML) document.getElementById('recentAlertsList').innerHTML = alertsHTML;
+                    const aEl = document.getElementById('recentAlertsList'); if (aEl && alertsHTML) aEl.innerHTML = alertsHTML;
                 }
-                
-            } catch (error) {
-                console.log('API unavailable, using demo data');
+            } catch (err) {
+                console.warn('Error applying API data', err);
             }
             
             // Keep existing mock data as fallback - Top processes for dashboard
@@ -318,6 +378,7 @@
                 <div class="tool-card"><div class="text-center"><i class="fas fa-lock text-4xl text-indigo-500 mb-3"></i><h4 class="font-semibold">Lynis</h4><p class="text-xs">Auditing</p><span class="badge-liquid bg-green-200/40 mt-2">Active</span><div class="grid grid-cols-2 gap-2 mt-3"><button class="liquid-btn text-xs">Start</button><button class="liquid-btn text-xs">Stop</button></div></div></div>
                 <div class="tool-card"><div class="text-center"><i class="fas fa-globe text-4xl text-cyan-500 mb-3"></i><h4 class="font-semibold">ModSecurity</h4><p class="text-xs">WAF</p><span class="badge-liquid bg-yellow-200/40 mt-2">WAF</span><div class="grid grid-cols-2 gap-2 mt-3"><button class="liquid-btn text-xs">Enable</button><button class="liquid-btn text-xs">Config</button></div></div></div>
             `;
+            try { saveCachedFragments(); } catch(e) { /* ignore caching issues */ }
         }
 
         function updateLogs() {
