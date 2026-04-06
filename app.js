@@ -1,4 +1,20 @@
 
+        // ==================== BASE PATH DETECTION FOR GITHUB PAGES ====================
+        window.APP_BASE_PATH = (() => {
+            const pathname = window.location.pathname;
+            // If running on GitHub Pages, extract the repo name
+            if (pathname.includes('/')) {
+                const parts = pathname.split('/').filter(p => p.length > 0);
+                // If there are path segments, return the full path up to the current directory
+                if (parts.length > 0 && !pathname.endsWith('index.html')) {
+                    return pathname.substring(0, pathname.lastIndexOf('/')) || '/';
+                }
+            }
+            return '/';
+        })();
+        
+        console.log('App Base Path:', window.APP_BASE_PATH);
+
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', async function() {
             // Fast hydrate from saved cache if available (instant UI on refresh)
@@ -31,8 +47,9 @@
             // Register service worker to accelerate repeat loads and cache API responses
             if ('serviceWorker' in navigator) {
                 try {
-                    navigator.serviceWorker.register('/sw.js').then(reg => {
-                        console.log('Service worker registered:', reg.scope);
+                    const swPath = window.APP_BASE_PATH ? window.APP_BASE_PATH.replace(/\/$/, '') + '/sw.js' : '/sw.js';
+                    navigator.serviceWorker.register(swPath).then(reg => {
+                        console.log('Service worker registered:', reg.scope, 'Path:', swPath);
                     }).catch(err => console.warn('Service worker registration failed:', err));
                 } catch (e) {
                     console.warn('Service worker registration error', e);

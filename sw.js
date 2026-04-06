@@ -1,13 +1,25 @@
-
 const CACHE_NAME = 'securesphere-static-v1';
 const DYNAMIC_CACHE = 'securesphere-dynamic-v1';
 
+// Get the base path dynamically (works on GitHub Pages subpaths)
+const getBasePath = () => {
+  try {
+    const pathname = self.location.pathname;
+    // Return the full path without the sw.js filename
+    return pathname.substring(0, pathname.lastIndexOf('/')) || '/';
+  } catch (e) {
+    return '/';
+  }
+};
+
+const BASE_PATH = getBasePath();
+
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/Style.css',
-  '/app.js',
-  '/api-client.js',
+  BASE_PATH,
+  BASE_PATH + '/index.html',
+  BASE_PATH + '/Style.css',
+  BASE_PATH + '/app.js',
+  BASE_PATH + '/api-client.js',
   'https://cdn.jsdelivr.net/npm/chart.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
 ];
