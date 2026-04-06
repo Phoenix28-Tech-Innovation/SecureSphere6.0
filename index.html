@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>SecureSphere | liquid glass · enterprise</title>
+    
+    <!-- Suppress Tailwind CDN production warning - Place before Tailwind script -->
+
+    <script>
+        window.tailwindConfig = { corePlugins: { preflight: true } };
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        const warnLog = console.warn = function() {
+            const args = Array.from(arguments);
+            const str = args.join(' ');
+            if (str.includes('cdn.tailwindcss.com') || str.includes('should not be used in production')) {
+                return;
+            }
+            return originalWarn.apply(console, arguments);
+        };
+        const errorLog = console.error = function() {
+            const args = Array.from(arguments);
+            const str = args.join(' ');
+            if (str.includes('cdn.tailwindcss.com') || str.includes('should not be used in production')) {
+                return;
+            }
+            return originalError.apply(console, arguments);
+        };
+    </script>
+    
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="Style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="api-client.js"></script>
+ 
+</head>
+<body class="p-4 md:p-6">
+
+    <!-- SECRET TOGGLE -->
+    <div class="secret-nav-toggle" id="secretNavToggle"></div>
+
+    <!-- VERTICAL NAV -->
+    <nav class="vertical-nav-liquid flex-col items-center py-8 px-2 gap-4 z-50 transition-all duration-300" id="verticalNav" data-minimized="false">
+        <div class="nav-item-liquid active" data-tab="dashboard"><i class="fas fa-chart-pie text-xl"></i><span class="nav-tooltip">Dashboard</span></div>
+        <div class="nav-item-liquid" data-tab="server"><i class="fas fa-server text-xl"></i><span class="nav-tooltip">Server</span></div>
+        <div class="nav-item-liquid" data-tab="security"><i class="fas fa-shield-alt text-xl"></i><span class="nav-tooltip">Security</span></div>
+        <div class="nav-item-liquid" data-tab="database"><i class="fas fa-database text-xl"></i><span class="nav-tooltip">Database</span></div>
+        <div class="nav-item-liquid" data-tab="backups"><i class="fas fa-cloud-upload-alt text-xl"></i><span class="nav-tooltip">Backups</span></div>
+        <div class="nav-item-liquid" data-tab="logs"><i class="fas fa-history text-xl"></i><span class="nav-tooltip">Logs</span></div>
+        <div class="nav-item-liquid" data-tab="updates"><i class="fas fa-sync-alt text-xl"></i><span class="nav-tooltip">Updates</span></div>
+        <div class="nav-item-liquid" data-tab="settings"><i class="fas fa-cog text-xl"></i><span class="nav-tooltip">Settings</span></div>
+        <div class="nav-item-liquid" data-tab="compliance"><i class="fas fa-gavel text-xl"></i><span class="nav-tooltip">Compliance</span></div>
+        <div class="nav-item-liquid" data-tab="vulnerability"><i class="fas fa-bug text-xl"></i><span class="nav-tooltip">Vulnerabilities</span></div>
+        <div class="nav-item-liquid" data-tab="tools"><i class="fas fa-toolbox text-xl"></i><span class="nav-tooltip">Security Tools</span></div>
+        <div class="nav-item-liquid" data-tab="analytics"><i class="fas fa-chart-line text-xl"></i><span class="nav-tooltip">Analytics</span></div>
+    </nav>
+
+    <!-- MOBILE NAV Enhanced with Floating Action Button -->
+    <div class="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50">
+        <!-- Wave background animation -->
+        <div class="nav-wave nav-wave-1"></div>
+        <div class="nav-wave nav-wave-2"></div>
+        <div class="nav-wave nav-wave-3"></div>
+        
+        <div class="mobile-nav-container">
+            <div class="mobile-nav-item-liquid active" data-tab="dashboard" style="--index: 0;">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+                <div class="mobile-nav-indicator"></div>
+            </div>
+            <div class="mobile-nav-item-liquid" data-tab="server" style="--index: 1;">
+                <i class="fas fa-server"></i>
+                <span>Server</span>
+                <div class="mobile-nav-indicator"></div>
+            </div>
+            <div class="mobile-nav-item-liquid" data-tab="security" style="--index: 2;">
+                <i class="fas fa-shield-alt"></i>
+                <span>Security</span>
+                <div class="mobile-nav-indicator"></div>
+            </div>
+            <div class="mobile-nav-item-liquid" data-tab="database" style="--index: 3;">
+                <i class="fas fa-database"></i>
+                <span>Database</span>
+                <div class="mobile-nav-indicator"></div>
+            </div>
+            <div class="mobile-nav-item-liquid" data-tab="backups" style="--index: 4;">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Backups</span>
+                <div class="mobile-nav-indicator"></div>
+            </div>
+            <!-- 'More' overflow - contains Logs and other secondary actions -->
+            <!-- removed 'More' overflow per request -->
+            <div class="mobile-nav-item-liquid" data-tab="settings" style="--index: 6;">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+                <div class="mobile-nav-indicator"></div>
+            </div>
+        </div>
+
+        <!-- More menu removed per request -->
+    </div>
+
+    <!-- Floating Action Button (FAB) - Outside mobile-bottom-nav -->
+    <button class="fab-button" id="fabButton" title="Quick actions">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Circular Action Menu -->
+    <div class="circular-menu md:hidden" id="circularMenu">
+        <div class="circular-menu-backdrop"></div>
+        <div class="circular-menu-items">
+            <button class="fab-menu-item" data-tab="updates" style="--item: 0;" title="Updates">
+                <i class="fas fa-sync-alt"></i>
+                <span class="fab-label">Updates</span>
+            </button>
+            <button class="fab-menu-item" data-tab="compliance" style="--item: 1;" title="Compliance">
+                <i class="fas fa-gavel"></i>
+                <span class="fab-label">Compliance</span>
+            </button>
+            <button class="fab-menu-item" data-tab="vulnerability" style="--item: 2;" title="Vulnerabilities">
+                <i class="fas fa-bug"></i>
+                <span class="fab-label">Vulnerabilities</span>
+            </button>
+            <button class="fab-menu-item" data-tab="tools" style="--item: 3;" title="Tools">
+                <i class="fas fa-toolbox"></i>
+                <span class="fab-label">Tools</span>
+            </button>
+            <button class="fab-menu-item" data-tab="analytics" style="--item: 4;" title="Analytics">
+                <i class="fas fa-chart-line"></i>
+                <span class="fab-label">Analytics</span>
+            </button>
+            <button class="fab-menu-item" data-tab="logs" style="--item: 5;" title="Logs">
+                <i class="fas fa-history"></i>
+                <span class="fab-label">Logs</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="p-3 md:p-5 transition-all duration-300" id="mainContent">
+
+        <!-- HEADER -->
+        <div class="flex flex-wrap justify-between items-center mb-8">
+            <div>
+                <h1 class="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">SecureSphere<span class="text-2xl ml-2 font-light text-gray-700">liquid</span></h1>
+                <p class="text-gray-700 mt-1 flex items-center gap-3"><i class="fas fa-droplet text-blue-400"></i> <span class="badge-liquid">99.9% uptime · 2FA · EDR · SIEM</span> <span id="systemStatus" class="font-semibold text-green-700">All systems operational</span></p>
+            </div>
+            <div class="header-actions-container">
+                <div class="header-notification-wrapper" id="notificationBell" title="View notifications" role="button" tabindex="0" aria-haspopup="dialog" aria-expanded="false" aria-controls="notificationsModal">
+                    <div class="notification-icon-container">
+                        <i class="fas fa-bell" aria-hidden="true"></i>
+                    </div>
+                    <span class="notification-badge" id="notificationCount" aria-live="polite">7</span>
+                </div>
+                <div class="header-profile-wrapper" id="profileBtn" title="View account profile">
+                    <div class="profile-button">
+                        <div class="profile-avatar-container">
+                            <img src="https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff&size=48" alt="Admin profile" class="profile-avatar">
+                        </div>
+                        <div class="profile-info"><p class="profile-name">Admin</p><p class="profile-role">root</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== DASHBOARD TAB ==================== -->
+        <div id="dashboard" class="tab-content active">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div class="liquid-card p-6 relative">
+                    <div class="flex justify-between items-center">
+                        <div><p class="text-gray-600 text-sm">CPU</p><h2 class="text-3xl font-bold" id="cpuValue">27%</h2><p class="text-xs text-green-600"><i class="fas fa-arrow-down"></i> 5% vs last hour</p></div>
+                        <div class="w-14 h-14 bg-blue-200/40 rounded-full flex items-center justify-center text-3xl text-blue-700"><i class="fas fa-microchip"></i></div>
+                    </div>
+                    <div class="absolute bottom-3 right-3 w-16 h-1 bg-white/40 rounded-full"><div class="progress-liquid h-1 rounded-full" id="cpuBar" style="width:27%"></div></div>
+                </div>
+                <div class="liquid-card p-6 relative">
+                    <div class="flex justify-between items-center">
+                        <div><p class="text-gray-600 text-sm">Memory</p><h2 class="text-3xl font-bold" id="memoryValue">4.8 GB</h2><p class="text-xs text-yellow-600">8.2 GB total</p></div>
+                        <div class="w-14 h-14 bg-purple-200/40 rounded-full flex items-center justify-center text-3xl text-purple-700"><i class="fas fa-memory"></i></div>
+                    </div>
+                    <div class="absolute bottom-3 right-3 w-16 h-1 bg-white/40 rounded-full"><div class="progress-liquid h-1 rounded-full" id="memoryBar" style="width:58%"></div></div>
+                </div>
+                <div class="liquid-card p-6 relative">
+                    <div class="flex justify-between items-center">
+                        <div><p class="text-gray-600 text-sm">Disk</p><h2 class="text-3xl font-bold" id="diskValue">168 GB</h2><p class="text-xs text-green-600">500 GB total</p></div>
+                        <div class="w-14 h-14 bg-green-200/40 rounded-full flex items-center justify-center text-3xl text-green-700"><i class="fas fa-hdd"></i></div>
+                    </div>
+                    <div class="absolute bottom-3 right-3 w-16 h-1 bg-white/40 rounded-full"><div class="progress-liquid h-1 rounded-full" id="diskBar" style="width:33%"></div></div>
+                </div>
+                <div class="liquid-card p-6 relative">
+                    <div class="flex justify-between items-center">
+                        <div><p class="text-gray-600 text-sm">Network</p><h2 class="text-3xl font-bold" id="networkValue">1.4 Gbps</h2><p class="text-xs text-blue-600">10 Gbps max</p></div>
+                        <div class="w-14 h-14 bg-orange-200/40 rounded-full flex items-center justify-center text-3xl text-orange-700"><i class="fas fa-wifi"></i></div>
+                    </div>
+                    <div class="absolute bottom-3 right-3 w-16 h-1 bg-white/40 rounded-full"><div class="progress-liquid h-1 rounded-full" id="networkBar" style="width:14%"></div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="liquid-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-semibold text-lg"><i class="fas fa-chart-line text-blue-500 mr-2"></i>System load (24h)</span>
+                        <div class="flex gap-2">
+                            <button class="px-3 py-1 text-xs bg-blue-500 text-white rounded-[30px_8px_30px_8px] chart-range" data-range="24h">24h</button>
+                            <button class="px-3 py-1 text-xs bg-white/40 rounded-[30px_8px_30px_8px] chart-range" data-range="7d">7d</button>
+                            <button class="px-3 py-1 text-xs bg-white/40 rounded-[30px_8px_30px_8px] chart-range" data-range="30d">30d</button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="systemChart" height="200"></canvas></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-semibold text-lg"><i class="fas fa-globe text-purple-500 mr-2"></i>Network traffic</span>
+                        <span class="badge-liquid text-xs">inbound / outbound</span>
+                    </div>
+                    <div class="chart-container"><canvas id="networkChart" height="200"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-tachometer-alt text-blue-500 mr-2"></i>Top processes</h3>
+                    <div class="space-y-2" id="topProcessesList"></div>
+                    <button class="liquid-btn w-full mt-4 text-sm" id="showProcessModal"><i class="fas fa-search mr-1"></i> inspect all</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-exclamation-triangle text-amber-500 mr-2"></i>Recent alerts</h3>
+                    <div id="recentAlertsList"></div>
+                    <button class="liquid-btn w-full mt-4 text-sm" id="showAlertModal"><i class="fas fa-bell mr-1"></i> view all</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-rocket text-purple-500 mr-2"></i>Quick actions</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="liquid-btn text-sm" id="refreshBtn"><i class="fas fa-sync-alt mr-1"></i> refresh</button>
+                        <button class="liquid-btn text-sm" id="exportBtn"><i class="fas fa-download mr-1"></i> export</button>
+                        <button class="liquid-btn text-sm" id="reportBtn"><i class="fas fa-file-alt mr-1"></i> report</button>
+                        <button class="liquid-btn text-sm" id="configBtn"><i class="fas fa-cog mr-1"></i> config</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SERVER TAB ==================== -->
+        <div id="server" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Server Infrastructure</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="liquid-card p-6 flex gap-3 items-center">
+                    <i class="fas fa-server text-3xl text-blue-500"></i>
+                    <div><p class="text-gray-500 text-sm">Web Servers</p><p class="text-3xl font-bold">3</p><p class="text-xs text-gray-500">2 active • 1 standby</p></div>
+                </div>
+                <div class="liquid-card p-6 flex gap-3 items-center">
+                    <i class="fas fa-database text-3xl text-green-500"></i>
+                    <div><p class="text-gray-500 text-sm">Database Nodes</p><p class="text-3xl font-bold">2</p><p class="text-xs text-gray-500">Master • Replica</p></div>
+                </div>
+                <div class="liquid-card p-6 flex gap-3 items-center">
+                    <i class="fas fa-memory text-3xl text-purple-500"></i>
+                    <div><p class="text-gray-500 text-sm">Total RAM</p><p class="text-3xl font-bold">64 GB</p><p class="text-xs text-gray-500">42 GB available</p></div>
+                </div>
+                <div class="liquid-card p-6 flex gap-3 items-center">
+                    <i class="fas fa-microchip text-3xl text-orange-500"></i>
+                    <div><p class="text-gray-500 text-sm">Total Cores</p><p class="text-3xl font-bold">24</p><p class="text-xs text-gray-500">16 vCPUs allocated</p></div>
+                </div>
+            </div>
+
+            <div class="liquid-card p-6 mb-6">
+                <h3 class="font-semibold mb-4">Server Instances</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr><th>Server</th><th>IP</th><th>Status</th><th>CPU</th><th>Memory</th><th>Uptime</th><th>Actions</th></tr></thead>
+                        <tbody id="serverTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Web Services</h3>
+                    <div class="space-y-2" id="webServicesList"></div>
+                    <button class="liquid-btn text-xs w-full mt-3 restart-web-btn">Restart All Web</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Database Services</h3>
+                    <div class="space-y-2" id="dbServicesList"></div>
+                    <button class="liquid-btn text-xs w-full mt-3 restart-db-btn">Restart All DB</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Service Controls</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="liquid-btn text-xs" id="startAllServices"><i class="fas fa-play"></i> Start All</button>
+                        <button class="liquid-btn text-xs" id="stopAllServices"><i class="fas fa-stop"></i> Stop All</button>
+                        <button class="liquid-btn text-xs" id="restartAllServices"><i class="fas fa-sync"></i> Restart</button>
+                        <button class="liquid-btn text-xs" id="serviceStatusBtn"><i class="fas fa-heartbeat"></i> Status</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SECURITY TAB ==================== -->
+        <div id="security" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6"><i class="fas fa-shield-alt text-blue-500 mr-2"></i>Security Center</h2>
+            <div class="relative mb-4 overflow-hidden" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(139, 92, 246, 0.15) 100%); backdrop-filter: blur(25px); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 60px 20px 50px 25px; padding: 1rem;">
+                <!-- Decorative gradient elements -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-green-400/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/5 rounded-full blur-3xl -ml-24 -mb-24"></div>
+                
+                <div class="relative z-10">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-green-400 mb-0.5"><i class="fas fa-shield-check text-green-400 mr-1.5"></i>Security Score</h3>
+                        </div>
+                        <div class="text-right">
+                            <div class="relative w-20 h-20">
+                                <!-- Circular progress background -->
+                                <svg class="w-full h-full transform -rotate-90" style="filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.2));">
+                                    <circle cx="40" cy="40" r="35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="5"/>
+                                    <circle cx="40" cy="40" r="35" fill="none" stroke="url(#scoreGradient)" stroke-width="5" stroke-dasharray="219.91" stroke-dashoffset="17.59" stroke-linecap="round" style="transition: all 0.3s ease;"/>
+                                    <defs>
+                                        <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span class="text-2xl font-bold text-green-300" id="securityScore">92%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced progress bar with gradient -->
+                    <div class="mb-2">
+                        <div class="relative w-full h-2 bg-white/10 rounded-full overflow-hidden border border-green-400/30" style="box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);">
+                            <div class="absolute inset-0 bg-gradient-to-r from-green-400 via-emerald-400 to-green-300 rounded-full" id="securityScoreBar" style="width:92%; animation: pulse 2s ease-in-out infinite;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Threat level cards -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="group cursor-pointer p-2 bg-gradient-to-br from-red-500/20 to-red-600/10 rounded-[30px_10px_25px_15px] border border-red-400/40 hover:border-red-400/70 transition-all duration-300 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                            <p class="text-white/60 text-xs flex items-center gap-1 mb-0.5"><i class="fas fa-exclamation-circle text-red-400" style="font-size: 0.75rem;"></i>Critical</p>
+                            <p class="text-xl font-bold text-red-300" id="criticalCount">2</p>
+                        </div>
+                        <div class="group cursor-pointer p-2 bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-[20px_35px_15px_30px] border border-orange-400/40 hover:border-orange-400/70 transition-all duration-300 hover:shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+                            <p class="text-white/60 text-xs flex items-center gap-1 mb-0.5"><i class="fas fa-arrow-up text-orange-400" style="font-size: 0.75rem;"></i>High</p>
+                            <p class="text-xl font-bold text-orange-300" id="highCount">5</p>
+                        </div>
+                        <div class="group cursor-pointer p-2 bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 rounded-[25px_15px_30px_10px] border border-yellow-400/40 hover:border-yellow-400/70 transition-all duration-300 hover:shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+                            <p class="text-white/60 text-xs flex items-center gap-1 mb-0.5"><i class="fas fa-minus text-yellow-400" style="font-size: 0.75rem;"></i>Medium</p>
+                            <p class="text-xl font-bold text-yellow-300" id="mediumCount">12</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.85; }
+                }
+            </style>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="liquid-card p-6">
+                    <i class="fas fa-shield-alt text-2xl text-blue-500 mb-2"></i>
+                    <p class="text-gray-500 text-sm">Firewall Rules</p>
+                    <p class="text-3xl font-bold" id="firewallRulesCount">156</p>
+                    <p class="text-xs text-gray-500">24 modified</p>
+                    <button class="liquid-btn text-xs w-full mt-2 firewall-rules-btn"><i class="fas fa-sliders-h mr-1"></i>Manage</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <i class="fas fa-ban text-2xl text-red-500 mb-2"></i>
+                    <p class="text-gray-500 text-sm">Blocked IPs</p>
+                    <p class="text-3xl font-bold" id="blockedIPsCount">1,234</p>
+                    <p class="text-xs text-gray-500">156 new</p>
+                    <button class="liquid-btn text-xs w-full mt-2 blocked-ips-btn"><i class="fas fa-list mr-1"></i>View</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <i class="fas fa-key text-2xl text-green-500 mb-2"></i>
+                    <p class="text-gray-500 text-sm">Active Keys</p>
+                    <p class="text-3xl font-bold" id="activeKeysCount">24</p>
+                    <p class="text-xs text-gray-500">2 expiring</p>
+                    <button class="liquid-btn text-xs w-full mt-2 ssh-keys-btn"><i class="fas fa-edit mr-1"></i>Manage</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <i class="fas fa-skull-crosswind text-2xl text-purple-500 mb-2"></i>
+                    <p class="text-gray-500 text-sm">Threats Blocked</p>
+                    <p class="text-3xl font-bold" id="threatsBlockedCount">8.2K</p>
+                    <p class="text-xs text-gray-500">30d</p>
+                    <button class="liquid-btn text-xs w-full mt-2 threat-intel-btn"><i class="fas fa-info-circle mr-1"></i>Intel</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-tools text-indigo-500 mr-2"></i>Security Tools</h3>
+                    <div class="space-y-3" id="securityToolsList"></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-warning text-red-500 mr-2"></i>Recent Threats</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead><tr><th>Time</th><th>Source IP</th><th>Type</th><th>Severity</th><th>Action</th></tr></thead>
+                            <tbody id="recentThreatsBody"></tbody>
+                        </table>
+                    </div>
+                    <button class="liquid-btn w-full mt-3 text-sm view-all-threats-btn"><i class="fas fa-external-link-alt mr-1"></i>View All Threats</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-user-shield text-green-500 mr-2"></i>Privileged Access</h3>
+                    <div class="space-y-2" id="privilegedAccessList"></div>
+                    <button class="liquid-btn w-full mt-3 text-sm access-control-btn"><i class="fas fa-lock mr-1"></i>Access Control</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-network-wired text-blue-500 mr-2"></i>Network Security</h3>
+                    <div class="space-y-2" id="networkSecurityList"></div>
+                    <button class="liquid-btn w-full mt-3 text-sm network-scan-btn"><i class="fas fa-search mr-1"></i>Network Scan</button>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-check-circle text-purple-500 mr-2"></i>Audit & Compliance</h3>
+                    <div class="space-y-2" id="auditComplianceList"></div>
+                    <button class="liquid-btn w-full mt-3 text-sm run-audit-btn"><i class="fas fa-play-circle mr-1"></i>Run Audit</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 mt-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3"><i class="fas fa-bolt text-yellow-500 mr-2"></i>Security Quick Actions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <button class="liquid-btn text-sm scan-btn" title="Full system scan"><i class="fas fa-play mr-1"></i>Full Scan</button>
+                        <button class="liquid-btn text-sm update-rules-btn" title="Update security rules"><i class="fas fa-sync-alt mr-1"></i>Update Rules</button>
+                        <button class="liquid-btn text-sm quarantine-btn" title="Quarantine threats"><i class="fas fa-lock mr-1"></i>Quarantine</button>
+                        <button class="liquid-btn text-sm forensics-btn" title="Run forensics"><i class="fas fa-microscope mr-1"></i>Forensics</button>
+                        <button class="liquid-btn text-sm edr-btn" title="EDR scan"><i class="fas fa-robot mr-1"></i>EDR Scan</button>
+                        <button class="liquid-btn text-sm firewall-btn" title="Firewall"><i class="fas fa-fire mr-1"></i>Firewall</button>
+                        <button class="liquid-btn text-sm ids-btn" title="IDS Rules"><i class="fas fa-eye mr-1"></i>IDS Rules</button>
+                        <button class="liquid-btn text-sm honeypot-btn" title="Honeypot"><i class="fas fa-dragon mr-1"></i>Honeypot</button>
+                        <button class="liquid-btn text-sm malware-scan-btn" title="Malware scan"><i class="fas fa-virus mr-1"></i>Malware</button>
+                        <button class="liquid-btn text-sm vuln-scan-btn" title="Vulnerability scan"><i class="fas fa-bug mr-1"></i>Vuln Scan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== DATABASE TAB ==================== -->
+        <div id="database" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Database Management</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="liquid-card p-6"><i class="fas fa-database text-3xl text-blue-500 mb-3"></i><h4 class="font-semibold">Total DBs</h4><p class="text-3xl font-bold" id="totalDBs">12</p></div>
+                <div class="liquid-card p-6"><i class="fas fa-table text-3xl text-green-500 mb-3"></i><h4 class="font-semibold">Tables</h4><p class="text-3xl font-bold" id="totalTables">156</p></div>
+                <div class="liquid-card p-6"><i class="fas fa-chart-line text-3xl text-purple-500 mb-3"></i><h4 class="font-semibold">Size</h4><p class="text-3xl font-bold" id="totalDBSize">2.3 GB</p></div>
+                <div class="liquid-card p-6"><i class="fas fa-tachometer-alt text-3xl text-orange-500 mb-3"></i><h4 class="font-semibold">QPS</h4><p class="text-3xl font-bold" id="dbQPS">2.5k</p></div>
+            </div>
+
+            <div class="liquid-card p-6 mb-6">
+                <h3 class="font-semibold mb-4">Databases</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr><th>Database</th><th>Size</th><th>Tables</th><th>Last Backup</th><th>Status</th><th>Encryption</th><th>Actions</th></tr></thead>
+                        <tbody id="databaseTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Database Performance</h3>
+                    <div class="chart-container"><canvas id="dbPerformanceChart" height="150"></canvas></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Replication Status</h3>
+                    <div class="space-y-3" id="replicationStatusList"></div>
+                    <button class="liquid-btn w-full mt-3 replication-settings-btn">Replication Settings</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 mt-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Database Actions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button class="liquid-btn text-sm backup-db-btn"><i class="fas fa-database mr-1"></i>Backup All</button>
+                        <button class="liquid-btn text-sm optimize-db-btn"><i class="fas fa-tachometer-alt mr-1"></i>Optimize</button>
+                        <button class="liquid-btn text-sm repair-db-btn"><i class="fas fa-wrench mr-1"></i>Repair</button>
+                        <button class="liquid-btn text-sm db-settings-btn"><i class="fas fa-cog mr-1"></i>Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BACKUPS TAB ==================== -->
+        <div id="backups" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Backup Management</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="liquid-card p-6"><p class="text-gray-500 text-sm">Last Backup</p><p class="text-xl font-bold" id="lastBackupTime">2h 15m ago</p><p class="text-xs text-green-500" id="lastBackupStatus">Successful</p></div>
+                <div class="liquid-card p-6"><p class="text-gray-500 text-sm">Total Backups</p><p class="text-xl font-bold" id="totalBackups">156</p></div>
+                <div class="liquid-card p-6"><p class="text-gray-500 text-sm">Storage Used</p><p class="text-xl font-bold" id="backupStorage">245 GB</p></div>
+                <div class="liquid-card p-6"><p class="text-gray-500 text-sm">Success Rate</p><p class="text-xl font-bold" id="backupSuccessRate">99.5%</p></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-4">Backup Schedule</h3>
+                    <div class="space-y-3" id="backupScheduleList"></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-4">Retention Policy</h3>
+                    <div class="space-y-3" id="retentionPolicyList"></div>
+                </div>
+            </div>
+
+            <div class="liquid-card p-6 mb-6">
+                <h3 class="font-semibold mb-4">Recent Backups</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr><th>ID</th><th>Type</th><th>Size</th><th>Source</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="recentBackupsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Backup Actions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button class="liquid-btn text-sm run-backup-btn"><i class="fas fa-play mr-1"></i>Run Backup</button>
+                        <button class="liquid-btn text-sm verify-backups-btn"><i class="fas fa-check-circle mr-1"></i>Verify</button>
+                        <button class="liquid-btn text-sm cleanup-backups-btn"><i class="fas fa-trash mr-1"></i>Cleanup</button>
+                        <button class="liquid-btn text-sm backup-settings-btn"><i class="fas fa-cog mr-1"></i>Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== LOGS TAB ==================== -->
+        <div id="logs" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">System Logs</h2>
+            <div class="liquid-card p-6 mb-6">
+                <div class="flex flex-wrap gap-2 items-center">
+                    <button class="liquid-btn text-sm log-filter active" data-filter="all">All</button>
+                    <button class="liquid-btn text-sm log-filter" data-filter="system">System</button>
+                    <button class="liquid-btn text-sm log-filter" data-filter="security">Security</button>
+                    <button class="liquid-btn text-sm log-filter" data-filter="application">Application</button>
+                    <button class="liquid-btn text-sm log-filter" data-filter="audit">Audit</button>
+                    <input type="text" placeholder="Search logs..." class="bg-white/30 rounded-[44px_18px] px-4 py-2 flex-1" id="logSearch">
+                    <button class="liquid-btn text-sm" id="exportLogsBtn"><i class="fas fa-download"></i> Export</button>
+                </div>
+            </div>
+            <div class="liquid-card p-6 h-96 overflow-y-auto space-y-2" id="logContainer"></div>
+            <div class="grid grid-cols-2 gap-3 mt-3">
+                <button class="liquid-btn text-sm" id="refreshLogsBtn"><i class="fas fa-sync-alt mr-1"></i>Refresh</button>
+                <button class="liquid-btn text-sm" id="clearLogsBtn"><i class="fas fa-trash mr-1"></i>Clear</button>
+            </div>
+        </div>
+
+        <!-- ==================== UPDATES TAB ==================== -->
+        <div id="updates" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">System Updates</h2>
+            <div class="glass-dark-liquid p-6 mb-6 flex justify-between items-center">
+                <span class="text-xl font-semibold"><i class="fas fa-shield-alt text-green-400 mr-2"></i><span id="securityUpdatesCount">3</span> security updates available</span>
+                <button class="liquid-btn liquid-btn-primary" id="checkUpdatesBtn">Check All</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-4">Security Updates</h3>
+                    <div class="space-y-3" id="securityUpdatesList"></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-4">System Updates</h3>
+                    <div class="space-y-3" id="systemUpdatesList"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 mt-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Update Settings</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button class="liquid-btn text-sm auto-update-btn"><i class="fas fa-clock mr-1"></i>Auto-Update</button>
+                        <button class="liquid-btn text-sm schedule-updates-btn"><i class="fas fa-calendar mr-1"></i>Schedule</button>
+                        <button class="liquid-btn text-sm update-history-btn"><i class="fas fa-history mr-1"></i>History</button>
+                        <button class="liquid-btn text-sm rollback-btn"><i class="fas fa-undo mr-1"></i>Rollback</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SETTINGS TAB ==================== -->
+        <div id="settings" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">System Settings</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4">General Settings</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-sm mb-1">System Name</label><input class="w-full" value="Production Server" id="systemName"></div>
+                            <div><label class="block text-sm mb-1">Time Zone</label>
+                                <select class="w-full" id="timezone">
+                                    <option>UTC</option><option>America/New_York</option><option>Europe/London</option><option>Asia/Tokyo</option>
+                                </select>
+                            </div>
+                            <button class="liquid-btn text-sm save-general-btn">Save Changes</button>
+                        </div>
+                    </div>
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4">Notifications</h3>
+                        <div class="space-y-3" id="notificationSettings"></div>
+                        <button class="liquid-btn text-sm mt-3 save-notifications-btn">Save</button>
+                    </div>
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4">Security Settings</h3>
+                        <div class="space-y-3" id="securitySettingsList"></div>
+                    </div>
+                    
+                    <!-- Backup & Restore Tools -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-server text-blue-500 mr-2"></i>Backup & Restore</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm run-backup-modal"><i class="fas fa-save mr-1"></i>Create Backup</button>
+                            <button class="liquid-btn text-sm restore-backup-modal"><i class="fas fa-undo mr-1"></i>Restore</button>
+                            <button class="liquid-btn text-sm schedule-backup-modal"><i class="fas fa-calendar mr-1"></i>Schedule</button>
+                            <button class="liquid-btn text-sm verify-backup-modal"><i class="fas fa-check-circle mr-1"></i>Verify</button>
+                        </div>
+                    </div>
+
+                    <!-- System Performance Tools -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-gauge-high text-green-500 mr-2"></i>System Performance</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm view-performance-modal"><i class="fas fa-chart-line mr-1"></i>Monitor</button>
+                            <button class="liquid-btn text-sm optimize-system-modal"><i class="fas fa-bolt mr-1"></i>Optimize</button>
+                            <button class="liquid-btn text-sm resource-limit-modal"><i class="fas fa-sliders-h mr-1"></i>Resource Limits</button>
+                            <button class="liquid-btn text-sm cache-config-modal"><i class="fas fa-database mr-1"></i>Cache Config</button>
+                        </div>
+                    </div>
+
+                    <!-- Network Configuration Tools -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-network-wired text-purple-500 mr-2"></i>Network Configuration</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm network-interfaces-modal"><i class="fas fa-ethernet mr-1"></i>Interfaces</button>
+                            <button class="liquid-btn text-sm dns-config-modal"><i class="fas fa-globe mr-1"></i>DNS</button>
+                            <button class="liquid-btn text-sm vpn-config-modal"><i class="fas fa-lock mr-1"></i>VPN</button>
+                            <button class="liquid-btn text-sm proxy-config-modal"><i class="fas fa-shield-alt mr-1"></i>Proxy</button>
+                        </div>
+                    </div>
+
+                    <!-- User & Permissions Management -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-users-cog text-indigo-500 mr-2"></i>User Management</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm manage-users-modal"><i class="fas fa-user-tie mr-1"></i>Users</button>
+                            <button class="liquid-btn text-sm manage-roles-modal"><i class="fas fa-key mr-1"></i>Roles</button>
+                            <button class="liquid-btn text-sm permissions-modal"><i class="fas fa-lock-open mr-1"></i>Permissions</button>
+                            <button class="liquid-btn text-sm session-mgmt-modal"><i class="fas fa-copy mr-1"></i>Sessions</button>
+                        </div>
+                    </div>
+
+                    <!-- API Keys & Tokens -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-key text-red-500 mr-2"></i>API & Tokens</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm api-keys-modal"><i class="fas fa-fingerprint mr-1"></i>API Keys</button>
+                            <button class="liquid-btn text-sm oauth-config-modal"><i class="fas fa-certificate mr-1"></i>OAuth</button>
+                            <button class="liquid-btn text-sm generate-token-modal"><i class="fas fa-plus mr-1"></i>Generate</button>
+                            <button class="liquid-btn text-sm revoke-token-modal"><i class="fas fa-trash mr-1"></i>Revoke</button>
+                        </div>
+                    </div>
+
+                    <!-- Database Maintenance -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-database text-cyan-500 mr-2"></i>Database Maintenance</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm db-health-modal"><i class="fas fa-heartbeat mr-1"></i>Health Check</button>
+                            <button class="liquid-btn text-sm db-optimize-modal"><i class="fas fa-compress mr-1"></i>Optimize</button>
+                            <button class="liquid-btn text-sm db-repair-modal"><i class="fas fa-tools mr-1"></i>Repair</button>
+                            <button class="liquid-btn text-sm db-replication-modal"><i class="fas fa-sync mr-1"></i>Replication</button>
+                        </div>
+                    </div>
+
+                    <!-- Log Management Tools -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-scroll text-orange-500 mr-2"></i>Log Management</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm view-logs-modal"><i class="fas fa-file-lines mr-1"></i>View Logs</button>
+                            <button class="liquid-btn text-sm log-rotation-modal"><i class="fas fa-history mr-1"></i>Rotation</button>
+                            <button class="liquid-btn text-sm log-export-modal"><i class="fas fa-download mr-1"></i>Export</button>
+                            <button class="liquid-btn text-sm log-archival-modal"><i class="fas fa-archive mr-1"></i>Archive</button>
+                        </div>
+                    </div>
+
+                    <!-- Audit & Compliance -->
+                    <div class="liquid-card p-6">
+                        <h3 class="font-semibold mb-4"><i class="fas fa-gavel text-yellow-500 mr-2"></i>Audit & Compliance</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button class="liquid-btn text-sm audit-trail-modal"><i class="fas fa-list mr-1"></i>Audit Trail</button>
+                            <button class="liquid-btn text-sm compliance-report-modal"><i class="fas fa-file-pdf mr-1"></i>Reports</button>
+                            <button class="liquid-btn text-sm policy-config-modal"><i class="fas fa-clipboard-check mr-1"></i>Policies</button>
+                            <button class="liquid-btn text-sm soc-config-modal"><i class="fas fa-cog mr-1"></i>SOC Config</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <!-- Profile Information Card -->
+                    <div class="liquid-card p-6">
+                        <div class="text-center mb-4">
+                            <img src="https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff&size=100" class="w-24 h-24 rounded-full mx-auto mb-3 border-4 border-blue-400/60 shadow-lg">
+                            <h3 class="text-xl font-bold">Admin User</h3>
+                            <p class="text-sm text-gray-600">root@securesphere.local</p>
+                            <div class="flex justify-center gap-2 mt-2">
+                                <span class="badge-liquid bg-green-300/40 px-3 py-1 text-xs font-semibold"><i class="fas fa-circle text-green-500 mr-1"></i>Online</span>
+                                <span class="badge-liquid bg-blue-300/40 px-3 py-1 text-xs font-semibold"><i class="fas fa-shield-alt mr-1"></i>Admin</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Profile Information Grid -->
+                        <div class="space-y-3 mb-4 text-sm">
+                            <div class="p-3 bg-white/20 rounded-2xl">
+                                <p class="text-xs opacity-70 uppercase tracking-wide">Role & Permissions</p>
+                                <p class="font-semibold mt-1">System Administrator</p>
+                                <p class="text-xs opacity-70 mt-1">Full system access · All privileges granted</p>
+                            </div>
+                            <div class="p-3 bg-white/20 rounded-2xl">
+                                <p class="text-xs opacity-70 uppercase tracking-wide">Last Activity</p>
+                                <p class="font-semibold mt-1">Today at 9:45 AM</p>
+                                <p class="text-xs opacity-70 mt-1">Last login: 2 hours ago</p>
+                            </div>
+                            <div class="p-3 bg-white/20 rounded-2xl">
+                                <p class="text-xs opacity-70 uppercase tracking-wide">Security Status</p>
+                                <p class="font-semibold mt-1">2FA: <span class="text-green-500">Enabled</span></p>
+                                <p class="text-xs opacity-70 mt-1">Password age: 12 days</p>
+                            </div>
+                            <div class="p-3 bg-white/20 rounded-2xl">
+                                <p class="text-xs opacity-70 uppercase tracking-wide">Contact Information</p>
+                                <p class="font-semibold mt-1">📧 admin@securesphere.local</p>
+                                <p class="text-xs opacity-70 mt-1">📱 +1 (555) 123-4567</p>
+                            </div>
+                            <div class="p-3 bg-white/20 rounded-2xl">
+                                <p class="text-xs opacity-70 uppercase tracking-wide">Account Status</p>
+                                <p class="font-semibold mt-1">Active since 2024-01-15</p>
+                                <p class="text-xs opacity-70 mt-1">Account age: 80 days</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons Grid -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="liquid-btn text-sm edit-profile-btn"><i class="fas fa-user-edit mr-1"></i>Edit Profile</button>
+                            <button class="liquid-btn text-sm change-password-btn"><i class="fas fa-lock mr-1"></i>Change Password</button>
+                            <button class="liquid-btn text-sm sessions-mgmt-btn"><i class="fas fa-copy mr-1"></i>Sessions</button>
+                            <button class="liquid-btn text-sm profile-settings-btn"><i class="fas fa-cog mr-1"></i>Settings</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Activity Card -->
+                    <div class="liquid-card p-6">
+                        <h4 class="font-semibold mb-3">Account Activity</h4>
+                        <div class="space-y-2 text-sm" id="accountActivityList">
+                            <div class="flex justify-between"><span>Last Login</span><span class="font-semibold">Today 9:45 AM</span></div>
+                            <div class="flex justify-between"><span>Last Password Change</span><span class="font-semibold">12 days ago</span></div>
+                            <div class="flex justify-between"><span>Active Sessions</span><span class="badge-liquid bg-green-200/40 px-2 py-1 text-xs">2 Active</span></div>
+                            <div class="flex justify-between"><span>Failed Logins (7d)</span><span class="font-semibold text-green-500">0</span></div>
+                            <div class="flex justify-between"><span>Account Age</span><span class="font-semibold">80 days</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Info Card -->
+                    <div class="liquid-card p-6">
+                        <h4 class="font-semibold mb-3">System Info</h4>
+                        <div class="space-y-2 text-sm" id="systemInfoList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== COMPLIANCE TAB ==================== -->
+        <div id="compliance" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Compliance & Audit</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="liquid-card p-6 text-center">
+                    <i class="fas fa-shield-alt text-4xl text-green-500 mb-3"></i>
+                    <h3 class="font-semibold">PCI DSS</h3>
+                    <p class="text-2xl font-bold text-green-600" id="pciScore">85%</p>
+                    <p class="text-xs text-gray-500">12 controls passed</p>
+                    <button class="liquid-btn text-xs w-full mt-3 view-pci-btn">View Details</button>
+                </div>
+                <div class="liquid-card p-6 text-center">
+                    <i class="fas fa-balance-scale text-4xl text-blue-500 mb-3"></i>
+                    <h3 class="font-semibold">GDPR</h3>
+                    <p class="text-2xl font-bold text-green-600" id="gdprScore">92%</p>
+                    <p class="text-xs text-gray-500">8 controls passed</p>
+                    <button class="liquid-btn text-xs w-full mt-3 view-gdpr-btn">View Details</button>
+                </div>
+                <div class="liquid-card p-6 text-center">
+                    <i class="fas fa-lock text-4xl text-purple-500 mb-3"></i>
+                    <h3 class="font-semibold">ISO 27001</h3>
+                    <p class="text-2xl font-bold text-yellow-600" id="isoScore">78%</p>
+                    <p class="text-xs text-gray-500">In progress</p>
+                    <button class="liquid-btn text-xs w-full mt-3 view-iso-btn">View Details</button>
+                </div>
+            </div>
+
+            <div class="liquid-card p-6 mb-6">
+                <h3 class="font-semibold mb-4">Recent Audits</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr><th>Date</th><th>Type</th><th>Result</th><th>Findings</th><th>Actions</th></tr></thead>
+                        <tbody id="recentAuditsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Compliance Actions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button class="liquid-btn text-sm run-compliance-scan"><i class="fas fa-play mr-1"></i>Run Scan</button>
+                        <button class="liquid-btn text-sm generate-compliance-report"><i class="fas fa-file-pdf mr-1"></i>Report</button>
+                        <button class="liquid-btn text-sm export-compliance-data"><i class="fas fa-download mr-1"></i>Export</button>
+                        <button class="liquid-btn text-sm schedule-compliance-audit"><i class="fas fa-calendar mr-1"></i>Schedule</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== VULNERABILITY TAB ==================== -->
+        <div id="vulnerability" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Vulnerability Management</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="liquid-card p-6 text-center bg-red-500/30"><p class="text-sm">Critical</p><p class="text-4xl font-bold" id="vulnCritical">3</p></div>
+                <div class="liquid-card p-6 text-center bg-orange-500/30"><p class="text-sm">High</p><p class="text-4xl font-bold" id="vulnHigh">8</p></div>
+                <div class="liquid-card p-6 text-center bg-yellow-500/30"><p class="text-sm">Medium</p><p class="text-4xl font-bold" id="vulnMedium">15</p></div>
+                <div class="liquid-card p-6 text-center bg-green-500/30"><p class="text-sm">Low</p><p class="text-4xl font-bold" id="vulnLow">27</p></div>
+            </div>
+
+            <div class="liquid-card p-6 mb-6">
+                <h3 class="font-semibold mb-4">Open Vulnerabilities</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead><tr><th>CVE</th><th>Package</th><th>Severity</th><th>CVSS</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="vulnerabilitiesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Vulnerability Actions</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <button class="liquid-btn text-sm run-vuln-scan"><i class="fas fa-search mr-1"></i>Scan</button>
+                        <button class="liquid-btn text-sm schedule-vuln-scan"><i class="fas fa-clock mr-1"></i>Schedule</button>
+                        <button class="liquid-btn text-sm export-vuln-report"><i class="fas fa-file-export mr-1"></i>Export</button>
+                        <button class="liquid-btn text-sm apply-patches"><i class="fas fa-wrench mr-1"></i>Patches</button>
+                        <button class="liquid-btn text-sm vuln-settings"><i class="fas fa-cog mr-1"></i>Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SECURITY TOOLS TAB ==================== -->
+        <div id="tools" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Security Tools Hub</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="securityToolsHub"></div>
+        </div>
+
+        <!-- ==================== ANALYTICS TAB ==================== -->
+        <div id="analytics" class="tab-content">
+            <h2 class="text-2xl font-bold mb-6">Security Analytics</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Threats Over Time</h3>
+                    <div class="chart-container"><canvas id="threatsChart" height="200"></canvas></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Security Events by Type</h3>
+                    <div class="chart-container"><canvas id="eventsChart" height="200"></canvas></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Top Attack Vectors</h3>
+                    <div id="attackVectorsList"></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Geographic Threats</h3>
+                    <div id="geoThreatsList"></div>
+                </div>
+                <div class="liquid-card p-6">
+                    <h3 class="font-semibold mb-3">Risk Score History</h3>
+                    <div class="chart-container"><canvas id="riskChart" height="150"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAINTENANCE BUTTON -->
+        <div class="fixed bottom-28 right-6 md:bottom-8 md:right-8 z-40">
+            <button class="w-16 h-16 bg-red-400/60 backdrop-blur-xl rounded-full text-white text-2xl shadow-2xl border border-white/60 hover:scale-110 transition" id="maintenanceToggle"><i class="fas fa-tools"></i></button>
+        </div>
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+    <!-- Process Modal -->
+    <div class="modal-overlay" id="processModal">
+        <div class="modal-content max-w-lg">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-microchip text-blue-500 mr-2"></i>Process Manager</h2>
+            <div class="mb-3 flex gap-2">
+                <input type="text" placeholder="Search processes..." class="flex-1" style="font-size: 0.85rem; padding: 6px 12px;">
+                <button class="liquid-btn text-sm"><i class="fas fa-sync mr-1"></i>Refresh</button>
+            </div>
+            <div class="space-y-2 max-h-96 overflow-auto" id="processList">
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <div><p class="font-semibold text-sm">chrome.exe</p><p class="text-xs opacity-70">PID: 2458 | RAM: 456 MB</p></div>
+                    <button class="text-xs px-2 py-1 rounded-full bg-red-500/20 text-red-600 hover:bg-red-500/40">End</button>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <div><p class="font-semibold text-sm">explorer.exe</p><p class="text-xs opacity-70">PID: 1024 | RAM: 234 MB</p></div>
+                    <button class="text-xs px-2 py-1 rounded-full bg-red-500/20 text-red-600 hover:bg-red-500/40">End</button>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-4">
+                <button class="liquid-btn text-sm" id="closeProcessModal">Close</button>
+                <button class="liquid-btn liquid-btn-danger text-sm" id="killProcessBtn">Kill Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-bell text-amber-500 mr-2"></i>Alerts & Notifications</h2>
+            <div id="alertList" class="space-y-2 max-h-80 overflow-auto">
+                <div class="p-3 bg-red-500/20 rounded-2xl border-l-4 border-red-500">
+                    <p class="font-semibold text-sm text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>Critical: Port Scan Detected</p>
+                    <p class="text-xs opacity-70 mt-1">Suspicious port scanning activity from 203.0.113.45 blocked</p>
+                    <p class="text-xs opacity-60 mt-2">2 minutes ago</p>
+                </div>
+                <div class="p-3 bg-yellow-500/20 rounded-2xl border-l-4 border-yellow-500">
+                    <p class="font-semibold text-sm text-yellow-600"><i class="fas fa-warning mr-2"></i>High: Unusual Login Attempt</p>
+                    <p class="text-xs opacity-70 mt-1">Multiple failed login attempts on admin account</p>
+                    <p class="text-xs opacity-60 mt-2">15 minutes ago</p>
+                </div>
+                <div class="p-3 bg-blue-500/20 rounded-2xl border-l-4 border-blue-500">
+                    <p class="font-semibold text-sm text-blue-600"><i class="fas fa-info-circle mr-2"></i>Info: System Update Available</p>
+                    <p class="text-xs opacity-70 mt-1">Security patch v2.4.1 is ready to install</p>
+                    <p class="text-xs opacity-60 mt-2">1 hour ago</p>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm" id="closeAlertModal">Close</button>
+                <button class="liquid-btn flex-1 text-sm liquid-btn-primary">Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Modal -->
+    <div class="modal-overlay" id="maintenanceModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-2"><i class="fas fa-tools text-red-500 mr-2"></i>Maintenance Mode</h2>
+            <p class="text-sm opacity-80 mb-4">Enable maintenance mode? The system will be temporarily unavailable.</p>
+            <div class="p-3 bg-orange-500/20 rounded-2xl border border-orange-500/50 mb-4">
+                <p class="text-xs font-semibold text-orange-600"><i class="fas fa-info-circle mr-2"></i>Affected Services: Web, API, Dashboard</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="liquid-btn flex-1 text-sm" id="cancelMaintenance">Cancel</button>
+                <button class="liquid-btn flex-1 text-sm liquid-btn-danger" id="confirmMaintenance">Enable Maintenance</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-content profile-modal-sidebar max-w-2xl">
+            <!-- Sidebar -->
+            <div class="profile-sidebar">
+                <div class="sidebar-header">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=2563eb&color=fff&size=120" class="sidebar-avatar" id="userAvatar" alt="User avatar">
+                    <div class="sidebar-info">
+                        <h3 class="sidebar-name" id="userFullName">Admin User</h3>
+                        <p class="sidebar-email" id="userEmail">root@securesphere.local</p>
+                        <div class="sidebar-status"><i class="fas fa-circle text-green-500 text-xs mr-2"></i><span>Online</span></div>
+                    </div>
+                </div>
+                <div class="sidebar-divider"></div>
+                <nav class="sidebar-nav">
+                    <button class="sidebar-nav-btn" id="navProfile" data-section="profile">
+                        <i class="fas fa-user"></i> Profile
+                    </button>
+                    <button class="sidebar-nav-btn" id="navSecurity" data-section="security">
+                        <i class="fas fa-shield-alt"></i> Security
+                    </button>
+                    <button class="sidebar-nav-btn" id="navSessions" data-section="sessions">
+                        <i class="fas fa-laptop"></i> Sessions
+                    </button>
+                    <button class="sidebar-nav-btn" id="navAccount" data-section="account">
+                        <i class="fas fa-cog"></i> Account
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="profile-content">
+                <!-- Profile Section -->
+                <div class="profile-section active" id="profileSection">
+                    <h4 class="section-title">Account Information</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <p class="info-label">Role & Permissions</p>
+                            <p class="info-value">System Administrator</p>
+                            <p class="info-desc">Full system access · All privileges granted</p>
+                        </div>
+                        <div class="info-item">
+                            <p class="info-label">Account Status</p>
+                            <p class="info-value text-green-600"><i class="fas fa-check-circle mr-1"></i>Active</p>
+                            <p class="info-desc">Verified and operational</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Section -->
+                <div class="profile-section" id="securitySection">
+                    <h4 class="section-title">Security</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <p class="info-label">2FA Status</p>
+                            <p class="info-value text-green-600"><i class="fas fa-check-circle mr-1"></i>Enabled</p>
+                            <p class="info-desc">Two-factor authentication active</p>
+                        </div>
+                        <div class="info-item">
+                            <p class="info-label">Password</p>
+                            <p class="info-value">Updated 30 days ago</p>
+                            <p class="info-desc">Last changed on Mar 7, 2026</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sessions Section -->
+                <div class="profile-section" id="sessionsSection">
+                    <h4 class="section-title">Active Sessions</h4>
+                    <div class="session-item">
+                        <div class="session-header">
+                            <i class="fas fa-laptop text-blue-500"></i>
+                            <div>
+                                <p class="session-device">This Device</p>
+                                <p class="session-time">Last active: Today 2:30 PM</p>
+                            </div>
+                        </div>
+                        <p class="session-location">192.168.1.100</p>
+                    </div>
+                    <div class="session-item">
+                        <div class="session-header">
+                            <i class="fas fa-mobile text-purple-500"></i>
+                            <div>
+                                <p class="session-device">Mobile Device</p>
+                                <p class="session-time">Last active: Today 1:15 PM</p>
+                            </div>
+                        </div>
+                        <p class="session-location">192.168.1.105</p>
+                    </div>
+                </div>
+
+                <!-- Account Section -->
+                <div class="profile-section" id="accountSection">
+                    <h4 class="section-title">Account Details</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <p class="info-label">Last Login</p>
+                            <p class="info-value">Today at 9:45 AM</p>
+                            <p class="info-desc">From IP: 192.168.1.100</p>
+                        </div>
+                        <div class="info-item">
+                            <p class="info-label">Account Created</p>
+                            <p class="info-value">January 15, 2024</p>
+                            <p class="info-desc">Active for 80 days</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="profile-actions">
+                    <button class="liquid-btn text-sm" id="editProfileBtn"><i class="fas fa-edit mr-1"></i>Edit Profile</button>
+                    <button class="liquid-btn text-sm" id="changePasswordBtn"><i class="fas fa-key mr-1"></i>Change Password</button>
+                    <button class="liquid-btn text-sm liquid-btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt mr-1"></i>Logout</button>
+                    <button class="liquid-btn text-sm" id="closeProfileModal"><i class="fas fa-times mr-1"></i>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="editProfileModal">
+        <div class="modal-content edit-profile-modal max-w-2xl">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-edit"></i>Edit Profile Information</h2>
+                <button class="modal-close-btn" id="closeEditProfileModal" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <h3 class="form-section-title">Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="editFullName" value="Admin User" placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="editEmail" value="root@securesphere.local" placeholder="Enter email">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section-title">Work Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Job Title</label>
+                            <input type="text" id="editJobTitle" value="Chief Security Officer" placeholder="Enter job title">
+                        </div>
+                        <div class="form-group">
+                            <label>Department</label>
+                            <input type="text" id="editDepartment" value="Security Operations" placeholder="Enter department">
+                        </div>
+                        <div class="form-group">
+                            <label>Office Location</label>
+                            <input type="text" id="editOffice" value="New York HQ" placeholder="Enter office location">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="editPhone" value="+1 (555) 123-4567" placeholder="Enter phone number">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3 class="form-section-title">Preferences</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Timezone</label>
+                            <select id="editTimezone">
+                                <option selected>America/New_York</option>
+                                <option>America/Chicago</option>
+                                <option>America/Los_Angeles</option>
+                                <option>Europe/London</option>
+                                <option>Europe/Paris</option>
+                                <option>Asia/Tokyo</option>
+                                <option>UTC</option>
+                                <option>Asia/Shanghai</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="liquid-btn" id="cancelEditProfile"><i class="fas fa-times mr-1"></i>Cancel</button>
+                <button class="liquid-btn liquid-btn-primary" id="saveEditProfile"><i class="fas fa-check mr-1"></i>Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Session Management Modal -->
+    <div class="modal-overlay" id="sessionsManagementModal">
+        <div class="modal-content max-w-md">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-copy text-cyan-500 mr-2"></i>Active Sessions</h2>
+            <div class="space-y-3 max-h-64 overflow-auto" id="sessionsList">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm">🖥️ Desktop - Chrome</p>
+                    <p class="text-xs text-gray-600 mt-1">IP: 192.168.1.45 | NYC</p>
+                    <p class="text-xs text-gray-600">Active now | Last activity: 2m ago</p>
+                    <button class="liquid-btn text-xs mt-2 w-full">Logout</button>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-blue-500">
+                    <p class="font-semibold text-sm">📱 Mobile - Safari</p>
+                    <p class="text-xs text-gray-600 mt-1">IP: 203.0.113.12 | Los Angeles</p>
+                    <p class="text-xs text-gray-600">Active now | Last activity: 15m ago</p>
+                    <button class="liquid-btn text-xs mt-2 w-full">Logout</button>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-3 text-sm liquid-btn-danger">Logout All Other Sessions</button>
+            <button class="liquid-btn w-full mt-2 text-sm" id="closeSessionsModal">Close</button>
+        </div>
+    </div>
+    
+    <!-- Profile Settings Modal -->
+    <div class="modal-overlay" id="profileSettingsModal">
+        <div class="modal-content max-w-md">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-sliders-h text-purple-500 mr-2"></i>Profile Settings</h2>
+            <div class="space-y-3 max-h-64 overflow-auto">
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">Public Profile</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" checked>
+                        <div class="w-8 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">Email Notifications</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" checked>
+                        <div class="w-8 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">Two-Factor Auth</span>
+                    <span class="badge-liquid bg-green-200/40 px-2 py-1 text-xs">Enabled</span>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">Login Alerts</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" checked>
+                        <div class="w-8 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeProfileSettingsModal">Close</button>
+        </div>
+    </div>
+    
+    <!-- Change Password Modal -->
+    <div class="modal-overlay" id="changePasswordModal">
+        <div class="modal-content change-password-modal max-w-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-lock"></i>Change Password</h2>
+                <button class="modal-close-btn" id="closeChangePasswordModal" title="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="password-info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Minimum 12 characters with uppercase, lowercase, number & symbol</span>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="currentPassword" placeholder="Enter your current password" autocomplete="current-password">
+                            <button class="toggle-password-btn" data-target="currentPassword" title="Show/Hide"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="newPassword" placeholder="Enter new password" autocomplete="new-password">
+                            <button class="toggle-password-btn" data-target="newPassword" title="Show/Hide"><i class="fas fa-eye"></i></button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar"></div>
+                            <span class="strength-text">Strength: Weak</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" placeholder="Confirm new password" autocomplete="new-password">
+                            <button class="toggle-password-btn" data-target="confirmPassword" title="Show/Hide"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="password-requirements">
+                    <p class="requirements-title">Password Requirements:</p>
+                    <ul class="requirements-list">
+                        <li id="req-length"><i class="fas fa-circle"></i> At least 12 characters</li>
+                        <li id="req-upper"><i class="fas fa-circle"></i> Contains uppercase letter</li>
+                        <li id="req-lower"><i class="fas fa-circle"></i> Contains lowercase letter</li>
+                        <li id="req-number"><i class="fas fa-circle"></i> Contains number</li>
+                        <li id="req-symbol"><i class="fas fa-circle"></i> Contains special symbol</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="liquid-btn" id="cancelChangePassword"><i class="fas fa-times mr-1"></i>Cancel</button>
+                <button class="liquid-btn liquid-btn-primary" id="confirmChangePassword"><i class="fas fa-key mr-1"></i>Change Password</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sessions Modal -->
+    <div class="modal-overlay" id="sessionsModal">
+        <div class="modal-content max-w-md">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-laptop text-purple-500 mr-2"></i>Active Sessions</h2>
+            <div class="space-y-3 mb-4 max-h-72 overflow-y-auto">
+                <div class="p-3 bg-white/20 rounded-2xl border border-green-500/40">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-semibold"><i class="fas fa-desktop text-green-400 mr-2"></i>Desktop - Windows</p>
+                            <p class="text-xs text-gray-400 mt-1">192.168.1.100 · Chrome</p>
+                        </div>
+                        <span class="badge-liquid bg-green-200/40">Active</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Last active: Just now</p>
+                    <button class="liquid-btn text-xs w-full mt-2 text-red-400 bg-red-500/10"><i class="fas fa-sign-out-alt mr-1"></i>Logout</button>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border border-blue-500/40">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-semibold"><i class="fas fa-mobile text-blue-400 mr-2"></i>Mobile - iPhone</p>
+                            <p class="text-xs text-gray-400 mt-1">210.45.123.56 · Safari</p>
+                        </div>
+                        <span class="badge-liquid bg-blue-200/40">Active</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Last active: 2 hours ago</p>
+                    <button class="liquid-btn text-xs w-full mt-2 text-red-400 bg-red-500/10"><i class="fas fa-sign-out-alt mr-1"></i>Logout</button>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border border-gray-500/40">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-semibold"><i class="fas fa-tablet text-gray-400 mr-2"></i>Tablet - iPad</p>
+                            <p class="text-xs text-gray-400 mt-1">172.23.98.45 · Safari</p>
+                        </div>
+                        <span class="badge-liquid bg-gray-200/40">Inactive</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Last active: 3 days ago</p>
+                    <button class="liquid-btn text-xs w-full mt-2 text-red-400 bg-red-500/10"><i class="fas fa-trash-alt mr-1"></i>Remove</button>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mb-2 text-sm liquid-btn-danger" id="logoutAllSessions"><i class="fas fa-sign-out-alt mr-1"></i>Logout All Other Sessions</button>
+            <button class="liquid-btn w-full text-sm" id="closeSessionsModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-file-export text-green-500 mr-2"></i>Export System Data</h2>
+            <p class="text-sm mb-3 font-semibold">Export Format:</p>
+            <div class="flex gap-2 mb-4">
+                <button class="liquid-btn flex-1 text-sm" id="exportCSV"><i class="fas fa-table mr-1"></i>CSV</button>
+                <button class="liquid-btn flex-1 text-sm" id="exportJSON"><i class="fas fa-code mr-1"></i>JSON</button>
+                <button class="liquid-btn flex-1 text-sm" id="exportPDF"><i class="fas fa-file-pdf mr-1"></i>PDF</button>
+            </div>
+            <p class="text-sm mb-3 font-semibold">Select Data to Export:</p>
+            <div class="space-y-2 mb-4 max-h-40 overflow-auto">
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/20 p-2 rounded-xl transition">
+                    <input type="checkbox" checked class="w-4 h-4">
+                    <span>System Metrics & Performance</span>
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/20 p-2 rounded-xl transition">
+                    <input type="checkbox" checked class="w-4 h-4">
+                    <span>Security Logs (Last 30 days)</span>
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/20 p-2 rounded-xl transition">
+                    <input type="checkbox" class="w-4 h-4">
+                    <span>Audit Trails & User Activity</span>
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/20 p-2 rounded-xl transition">
+                    <input type="checkbox" class="w-4 h-4">
+                    <span>Backup & Recovery Reports</span>
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/20 p-2 rounded-xl transition">
+                    <input type="checkbox" class="w-4 h-4">
+                    <span>Compliance & Vulnerability Data</span>
+                </label>
+            </div>
+            <div class="flex gap-2">
+                <button class="liquid-btn w-full text-sm" id="closeExport">Cancel</button>
+                <button class="liquid-btn w-full text-sm liquid-btn-success" id="confirmExport"><i class="fas fa-download mr-1"></i>Export</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server Management Modal -->
+    <div class="modal-overlay" id="manageServerModal">
+        <div class="modal-content max-w-lg">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-server text-blue-500 mr-2"></i>Manage Server: <span id="serverNameSpan" class="text-blue-600">web-01</span></h2>
+            <div class="space-y-3" id="serverDetails">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="text-xs opacity-70 uppercase">Status</p>
+                    <p class="font-semibold mt-1 text-green-600"><i class="fas fa-circle text-green-500 mr-2"></i>Online</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="text-xs opacity-70 uppercase">Uptime</p>
+                    <p class="font-semibold mt-1">45 days, 12 hours, 34 minutes</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="text-xs opacity-70 uppercase">CPU Load</p>
+                    <p class="font-semibold mt-1">28% · <span class="text-sm opacity-70">4 of 16 cores in use</span></p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="text-xs opacity-70 uppercase">Memory Usage</p>
+                    <p class="font-semibold mt-1">6.2 GB / 32 GB (19%)</p>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm" id="restartServerBtn"><i class="fas fa-sync mr-1"></i>Restart</button>
+                <button class="liquid-btn flex-1 text-sm liquid-btn-danger" id="stopServerBtn"><i class="fas fa-stop mr-1"></i>Stop</button>
+                <button class="liquid-btn flex-1 text-sm liquid-btn-success" id="startServerBtn"><i class="fas fa-play mr-1"></i>Start</button>
+            </div>
+            <button class="liquid-btn w-full mt-3 text-sm" id="closeManageModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Firewall Rules Modal -->
+    <div class="modal-overlay" id="firewallRulesModal">
+        <div class="modal-content max-w-lg">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-fire text-orange-500 mr-2"></i>Firewall Rules (156 Total)</h2>
+            <div class="space-y-2 max-h-72 overflow-auto" id="firewallRulesList">
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>Allow SSH (TCP:22) from 192.168.0.0/24</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>Block HTTP (TCP:80) from External</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>Allow HTTPS (TCP:443) from Any</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>Drop Suspicious DNS queries</span>
+                    <span class="badge-liquid bg-blue-300/40 text-xs">Monitoring</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm" id="addRuleBtn"><i class="fas fa-plus mr-1"></i>Add Rule</button>
+                <button class="liquid-btn flex-1 text-sm" id="closeFirewallModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blocked IPs Modal -->
+    <div class="modal-overlay" id="blockedIPsModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-ban text-red-500 mr-2"></i>Blocked IPs (1,234 Total)</h2>
+            <input type="text" placeholder="Search IP addresses..." class="w-full mb-3" style="font-size: 0.85rem; padding: 6px 12px;">
+            <div class="space-y-2 max-h-72 overflow-auto" id="blockedIPsList">
+                <div class="p-2 bg-red-500/20 rounded-2xl flex justify-between items-center text-sm">
+                    <div><p class="font-semibold">203.0.113.45</p><p class="text-xs opacity-70">Port scanning attempt</p></div>
+                    <button class="text-xs px-2 py-1 rounded-full bg-yellow-500/20 hover:bg-yellow-500/40">Unblock</button>
+                </div>
+                <div class="p-2 bg-red-500/20 rounded-2xl flex justify-between items-center text-sm">
+                    <div><p class="font-semibold">198.51.100.78</p><p class="text-xs opacity-70">Brute force attack</p></div>
+                    <button class="text-xs px-2 py-1 rounded-full bg-yellow-500/20 hover:bg-yellow-500/40">Unblock</button>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeBlockedIPsModal">Close</button>
+        </div>
+    </div>
+
+    <!-- SSH Keys Modal -->
+    <div class="modal-overlay" id="sshKeysModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-key text-green-500 mr-2"></i>Active SSH Keys (24 Total)</h2>
+            <div class="space-y-2 max-h-72 overflow-auto" id="sshKeysList">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <div class="flex justify-between items-start mb-2">
+                        <div><p class="font-semibold text-sm">Desktop-Primary</p><p class="text-xs opacity-70 mt-1">Added: Jan 15, 2026</p></div>
+                        <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                    </div>
+                    <p class="text-xs font-mono opacity-60 truncate">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC...</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <div class="flex justify-between items-start mb-2">
+                        <div><p class="font-semibold text-sm">Laptop-Work</p><p class="text-xs opacity-70 mt-1">Added: Mar 02, 2026</p></div>
+                        <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                    </div>
+                    <p class="text-xs font-mono opacity-60 truncate">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQD...</p>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm" id="addSSHKeyBtn"><i class="fas fa-plus mr-1"></i>Add Key</button>
+                <button class="liquid-btn flex-1 text-sm" id="closeSSHKeysModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Threat Intel Modal -->
+    <div class="modal-overlay" id="threatIntelModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-skull-crosswind text-purple-500 mr-2"></i>Threat Intelligence Summary</h2>
+            <div class="space-y-3 max-h-72 overflow-auto" id="threatIntelList">
+                <div class="p-3 bg-red-500/20 rounded-2xl border-l-4 border-red-500">
+                    <p class="font-semibold text-sm text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>CVE-2025-1234 Detected</p>
+                    <p class="text-xs opacity-70 mt-1">Critical vulnerability in OpenSSL - Patch available</p>
+                    <p class="text-xs opacity-60 mt-2">Risk Level: <span class="text-red-600 font-semibold">Critical</span></p>
+                </div>
+                <div class="p-3 bg-yellow-500/20 rounded-2xl border-l-4 border-yellow-500">
+                    <p class="font-semibold text-sm text-yellow-600"><i class="fas fa-warning mr-2"></i>Known Malware Signature Match</p>
+                    <p class="text-xs opacity-70 mt-1">Trojan.Generic.A2B5 - Quarantined in sandbox</p>
+                    <p class="text-xs opacity-60 mt-2">Risk Level: <span class="text-yellow-600 font-semibold">High</span></p>
+                </div>
+                <div class="p-3 bg-blue-500/20 rounded-2xl border-l-4 border-blue-500">
+                    <p class="font-semibold text-sm text-blue-600"><i class="fas fa-info-circle mr-2"></i>Zero-Day Threat Alert</p>
+                    <p class="text-xs opacity-70 mt-1">5 new threat actors identified targeting financial sector</p>
+                    <p class="text-xs opacity-60 mt-2">Risk Level: <span class="text-blue-600 font-semibold">Medium</span></p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeThreatIntelModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Scan Results Modal -->
+    <div class="modal-overlay" id="scanModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-search text-blue-500 mr-2"></i>Full System Scan Results</h2>
+            <div class="space-y-3 max-h-72 overflow-auto" id="scanResultsList">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-semibold text-sm">System Files</p>
+                            <p class="text-xs text-gray-600 mt-1">12,453 files scanned - No threats</p>
+                        </div>
+                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-semibold text-sm">Applications</p>
+                            <p class="text-xs text-gray-600 mt-1">342 apps scanned - 3 suspicious</p>
+                        </div>
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-semibold text-sm">Network Traffic</p>
+                            <p class="text-xs text-gray-600 mt-1">Real-time monitoring - No anomalies</p>
+                        </div>
+                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 p-2 bg-green-500/20 rounded-2xl border border-green-500/50">
+                <p class="text-xs font-semibold text-green-700"><i class="fas fa-check-circle mr-1"></i>Scan completed in 45 seconds - System is secure</p>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm"><i class="fas fa-download mr-1"></i>Export</button>
+                <button class="liquid-btn flex-1 text-sm" id="closeScanModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forensics Modal -->
+    <div class="modal-overlay" id="forensicsModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-microscope text-indigo-500 mr-2"></i>Forensics Analysis</h2>
+            <div class="space-y-2 max-h-72 overflow-auto" id="forensicsList">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-2"></i>Process Injection Detection</p>
+                    <p class="text-xs text-gray-600 mt-1">No suspicious injections detected</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-2"></i>Memory Analysis</p>
+                    <p class="text-xs text-gray-600 mt-1">Analyzed 16 GB RAM - No anomalies found</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-2"></i>Rootkit Scan</p>
+                    <p class="text-xs text-gray-600 mt-1">1,234 drivers checked - All verified</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-2"></i>File Integrity</p>
+                    <p class="text-xs text-gray-600 mt-1">Critical system files verified</p>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm" id="exportForensicsBtn"><i class="fas fa-download mr-1"></i>Export</button>
+                <button class="liquid-btn flex-1 text-sm" id="closeForensicsModal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDR Scan Modal -->
+    <div class="modal-overlay" id="edrModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-robot text-cyan-500 mr-2"></i>Endpoint Detection & Response</h2>
+            <div class="space-y-2 max-h-72 overflow-auto" id="edrList">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-1"></i>Behavioral Analysis</p>
+                    <p class="text-xs opacity-70 mt-1">No suspicious behavior detected</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-1"></i>Process Tree Analysis</p>
+                    <p class="text-xs opacity-70 mt-1">All processes are legitimate</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-yellow-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>Lateral Movement</p>
+                    <p class="text-xs opacity-70 mt-1">1 suspicious login attempt blocked</p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeEdrModal">Close</button>
+        </div>
+    </div>
+
+    <!-- IDS Rules Modal -->
+    <div class="modal-overlay" id="idsModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-eye text-purple-500 mr-2"></i>Intrusion Detection System (IDS) Rules</h2>
+            <div class="space-y-2 max-h-72 overflow-auto" id="idsList">
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>SQL Injection Detection</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>XSS Attack Detection</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>DDoS Detection</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>Port Scan Detection</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center text-sm">
+                    <span>Brute Force Detection</span>
+                    <span class="badge-liquid bg-green-300/40 text-xs">Active</span>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeIdsModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Honeypot Modal -->
+    <div class="modal-overlay" id="honeypotModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-dragon text-red-500 mr-2"></i>Honeypot System Status</h2>
+            <div class="space-y-3 max-h-72 overflow-auto" id="honeypotList">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-circle text-green-500 mr-1"></i>Honeypot Servers: Active</p>
+                    <p class="text-xs opacity-70 mt-1">3 active decoy systems</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-orange-500">
+                    <p class="font-semibold text-sm">Recent Attacks Captured</p>
+                    <p class="text-xs opacity-70 mt-1">
+                        <i class="fas fa-arrow-right mr-1"></i>23 SSH login attempts<br>
+                        <i class="fas fa-arrow-right mr-1"></i>5 HTTP directory scans<br>
+                        <i class="fas fa-arrow-right mr-1"></i>12 port probes
+                    </p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-blue-500">
+                    <p class="font-semibold text-sm">Intelligence Gathered</p>
+                    <p class="text-xs opacity-70 mt-1">45 unique attacker IPs identified</p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeHoneypotModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Quarantine Modal -->
+    <div class="modal-overlay" id="quarantineModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-lock text-orange-500 mr-2"></i>Quarantine Management</h2>
+            <div class="space-y-2 max-h-96 overflow-auto" id="quarantineList">
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <div><p class="font-semibold text-sm">suspicious_file_001.exe</p><p class="text-xs text-gray-600">2h ago</p></div>
+                    <div class="flex gap-2">
+                        <button class="liquid-btn text-xs px-2">Review</button>
+                        <button class="text-red-500 font-bold">Delete</button>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <div><p class="font-semibold text-sm">malware_variant.dll</p><p class="text-xs text-gray-600">1d ago</p></div>
+                    <div class="flex gap-2">
+                        <button class="liquid-btn text-xs px-2">Review</button>
+                        <button class="text-red-500 font-bold">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4" id="closeQuarantineModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Malware Scan Modal -->
+    <div class="modal-overlay" id="malwareModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-virus text-red-500 mr-2"></i>Malware Scan Results</h2>
+            <div class="space-y-3 max-h-96 overflow-auto" id="malwareList">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-semibold text-sm">Virus Definitions</p>
+                        <span class="badge-liquid bg-green-200/40">Up to date</span>
+                    </div>
+                    <p class="text-xs text-gray-600">2.4M signatures - Last updated 1h ago</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">Full Disk Scan</p>
+                    <div class="w-full bg-white/20 rounded-full h-2 mt-2"><div class="bg-blue-500 h-2 rounded-full" style="width:100%"></div></div>
+                    <p class="text-xs text-gray-600 mt-1">Completed: 2,456,789 files scanned</p>
+                </div>
+                <div class="p-3 bg-green-500/20 rounded-2xl border border-green-500/50">
+                    <p class="text-sm font-semibold text-green-700"><i class="fas fa-check-circle mr-2"></i>No malware detected</p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4" id="closeMalwareModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Vulnerability Scan Modal -->
+    <div class="modal-overlay" id="vulnModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-bug text-orange-500 mr-2"></i>Vulnerability Assessment</h2>
+            <div class="space-y-3 max-h-96 overflow-auto" id="vulnList">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-red-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-exclamation-circle text-red-500 mr-1"></i>Critical (1)</p>
+                    <p class="text-xs text-gray-600 mt-1">OpenSSL - CVE-2024-1234 - Patch available</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-orange-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-arrow-up text-orange-500 mr-1"></i>High (3)</p>
+                    <p class="text-xs text-gray-600 mt-1">MySQL, PHP, Nginx - Updates recommended</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-yellow-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-minus text-yellow-500 mr-1"></i>Medium (7)</p>
+                    <p class="text-xs text-gray-600 mt-1">Various dependencies - Monitor and update</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">Last Assessment: 2h ago</p>
+                </div>
+            </div>
+            <button class="liquid-btn flex-1" id="patchAllBtn" style="margin-top: 1rem; margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-download mr-1"></i>Patch All</button>
+            <button class="liquid-btn flex-1" id="closeVulnModal" style="margin-top: 1rem; margin-left: 0.5rem; width: calc(50% - 0.25rem);">Close</button>
+        </div>
+    </div>
+
+    <!-- Update Rules Modal -->
+    <div class="modal-overlay" id="updateRulesModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-sync-alt text-blue-500 mr-2"></i>Update Security Rules</h2>
+            <div class="space-y-3 max-h-96 overflow-auto" id="updateRulesList">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-semibold text-sm">Firewall Rules</p>
+                        <span class="badge-liquid bg-blue-200/40">+5 new</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">Latest version: 3.2.1 (2024-03-25)</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-semibold text-sm">IDS Signatures</p>
+                        <span class="badge-liquid bg-blue-200/40">+145 new</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">Latest version: 2024.1 (2024-03-25)</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-semibold text-sm">Antivirus Signatures</p>
+                        <span class="badge-liquid bg-blue-200/40">+2.3K new</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">Latest version: 2.4.5 (2024-03-25)</p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 liquid-btn-primary" id="applyUpdatesBtn"><i class="fas fa-check-circle mr-1"></i>Apply All Updates</button>
+            <button class="liquid-btn w-full mt-2" id="closeUpdateRulesModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Network Scan Modal -->
+    <div class="modal-overlay" id="networkScanModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-network-wired text-green-500 mr-2"></i>Network Security Scan</h2>
+            <div class="space-y-3 max-h-96 overflow-auto" id="networkScanList">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">Open Ports: 23</p>
+                    <p class="text-xs text-gray-600 mt-1">
+                        <i class="fas fa-arrow-right mr-1"></i>80 (HTTP) - Expected<br>
+                        <i class="fas fa-arrow-right mr-1"></i>443 (HTTPS) - Expected<br>
+                        <i class="fas fa-arrow-right mr-1"></i>22 (SSH) - Restricted
+                    </p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm flex items-center"><i class="fas fa-circle text-green-500 mr-2"></i>Active Connections: 147</p>
+                    <p class="text-xs text-gray-600 mt-1">All connections verified and legitimate</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">VPN Tunnels: 12 Active</p>
+                    <p class="text-xs text-gray-600 mt-1">All encrypted with TLS 1.3</p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4" id="closeNetworkScanModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Access Control Modal -->
+    <div class="modal-overlay" id="accessControlModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-lock-open text-indigo-500 mr-2"></i>Access Control Management</h2>
+            <div class="space-y-2 max-h-96 overflow-auto" id="accessControlList">
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">admin</span>
+                    <span class="badge-liquid bg-green-200/40">MFA Enabled</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">deploy_user</span>
+                    <span class="badge-liquid bg-yellow-200/40">Standard</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">backup_service</span>
+                    <span class="badge-liquid bg-blue-200/40">Service Account</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span class="text-sm">audit_user</span>
+                    <span class="badge-liquid bg-gray-200/40">Read Only</span>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4" id="closeAccessControlModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Audit Modal -->
+    <div class="modal-overlay" id="auditModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-clipboard-list text-indigo-500 mr-2"></i>Compliance Audit Results</h2>
+            <div class="space-y-3 max-h-96 overflow-auto" id="auditList">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-1"></i>PCI DSS</p>
+                    <p class="text-xs text-gray-600 mt-1">Compliance: 100% - All requirements met</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-1"></i>GDPR</p>
+                    <p class="text-xs text-gray-600 mt-1">Compliance: 100% - Data protection verified</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-yellow-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>HIPAA</p>
+                    <p class="text-xs text-gray-600 mt-1">Compliance: 98% - 2 findings in remediation</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm"><i class="fas fa-check-circle text-green-500 mr-1"></i>ISO 27001</p>
+                    <p class="text-xs text-gray-600 mt-1">Certification: Valid until 2025-06-15</p>
+                </div>
+            </div>
+            <button class="liquid-btn flex-1" id="downloadAuditBtn" style="margin-top: 1rem; margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-download mr-1"></i>Download Report</button>
+            <button class="liquid-btn flex-1" id="closeAuditModal" style="margin-top: 1rem; margin-left: 0.5rem; width: calc(50% - 0.25rem);">Close</button>
+        </div>
+    </div>
+
+    <!-- All Threats Table Modal -->
+    <div class="modal-overlay" id="threatTableModal">
+        <div class="modal-content max-w-2xl">
+            <h2 class="text-2xl mb-4"><i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>All Security Threats</h2>
+            <div class="overflow-x-auto max-h-96" id="threatTableContainer">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="text-left p-2">Time</th>
+                            <th class="text-left p-2">Source IP</th>
+                            <th class="text-left p-2">Type</th>
+                            <th class="text-left p-2">Severity</th>
+                            <th class="text-left p-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="threatTableBody"></tbody>
+                </table>
+            </div>
+            <button class="liquid-btn w-full mt-4" id="closeThreatTableModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal-overlay" id="notificationsModal">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold"><i class="fas fa-bell text-amber-500 mr-2"></i>Notifications</h2>
+                <button id="markAllReadBtn" class="liquid-btn text-xs"><i class="fas fa-check-double mr-1"></i>Mark All Read</button>
+            </div>
+            
+            <div class="mb-3 flex gap-2">
+                <button class="liquid-btn text-xs notification-filter active" data-filter="all">All</button>
+                <button class="liquid-btn text-xs notification-filter" data-filter="alerts">Alerts</button>
+                <button class="liquid-btn text-xs notification-filter" data-filter="security">Security</button>
+                <button class="liquid-btn text-xs notification-filter" data-filter="system">System</button>
+            </div>
+            
+            <div id="notificationsList" class="space-y-3 max-h-96 overflow-y-auto mb-4">
+                <div class="p-3 bg-red-500/20 rounded-2xl border-l-4 border-red-500 hover:bg-red-500/30 transition cursor-pointer" data-notif-type="security">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm text-red-300"><i class="fas fa-exclamation-circle mr-2"></i>Critical: Port Scan Detected</p>
+                            <p class="text-xs text-gray-300 mt-1">Suspicious port scanning activity from 203.0.113.45 has been detected and automatically blocked by the firewall.</p>
+                            <p class="text-xs text-gray-500 mt-2">2 minutes ago</p>
+                        </div>
+                        <button class="text-gray-400 hover:text-red-400 ml-2"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-yellow-500/20 rounded-2xl border-l-4 border-yellow-500 hover:bg-yellow-500/30 transition cursor-pointer" data-notif-type="alerts">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm text-yellow-300"><i class="fas fa-warning mr-2"></i>High: Unusual Login Attempt</p>
+                            <p class="text-xs text-gray-300 mt-1">Multiple failed login attempts detected on admin account from unknown IP address 210.45.78.123. Account has been temporarily locked.</p>
+                            <p class="text-xs text-gray-500 mt-2">15 minutes ago</p>
+                        </div>
+                        <button class="text-gray-400 hover:text-yellow-400 ml-2"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-blue-500/20 rounded-2xl border-l-4 border-blue-500 hover:bg-blue-500/30 transition cursor-pointer" data-notif-type="system">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm text-blue-300"><i class="fas fa-info-circle mr-2"></i>System: Update Available</p>
+                            <p class="text-xs text-gray-300 mt-1">Security patch v2.4.1 is now ready for installation. This update includes critical security fixes and performance improvements.</p>
+                            <div class="mt-2 flex gap-2">
+                                <button class="liquid-btn text-xs bg-blue-500/40 hover:bg-blue-500/60"><i class="fas fa-download mr-1"></i>Update</button>
+                                <button class="liquid-btn text-xs bg-gray-500/40 hover:bg-gray-500/60"><i class="fas fa-calendar mr-1"></i>Schedule</button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">1 hour ago</p>
+                        </div>
+                        <button class="text-gray-400 hover:text-blue-400 ml-2"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-green-500/20 rounded-2xl border-l-4 border-green-500 hover:bg-green-500/30 transition cursor-pointer" data-notif-type="system">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm text-green-300"><i class="fas fa-check-circle mr-2"></i>Success: Backup Completed</p>
+                            <p class="text-xs text-gray-300 mt-1">Daily backup completed successfully. 245 GB backed up in 2 hours 34 minutes with 99.9% success rate.</p>
+                            <p class="text-xs text-gray-500 mt-2">3 hours ago</p>
+                        </div>
+                        <button class="text-gray-400 hover:text-green-400 ml-2"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-orange-500/20 rounded-2xl border-l-4 border-orange-500 hover:bg-orange-500/30 transition cursor-pointer" data-notif-type="alerts">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm text-orange-300"><i class="fas fa-thermometer-half mr-2"></i>Warning: High CPU Usage</p>
+                            <p class="text-xs text-gray-300 mt-1">CPU usage on web-01 has exceeded 85% for the last 15 minutes. Current usage: 87% (avg 4 hours: 42%)</p>
+                            <div class="mt-2 flex gap-2">
+                                <button class="liquid-btn text-xs bg-orange-500/40 hover:bg-orange-500/60"><i class="fas fa-chart-line mr-1"></i>View Details</button>
+                                <button class="liquid-btn text-xs bg-orange-500/40 hover:bg-orange-500/60"><i class="fas fa-check mr-1"></i>Acknowledge</button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">5 hours ago</p>
+                        </div>
+                        <button class="text-gray-400 hover:text-orange-400 ml-2"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-purple-500/20 rounded-2xl border-l-4 border-purple-500 hover:bg-purple-500/30 transition cursor-pointer" data-notif-type="security">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm text-purple-300"><i class="fas fa-shield-alt mr-2"></i>Compliance: Audit Passed</p>
+                            <p class="text-xs text-gray-300 mt-1">PCI DSS compliance audit completed successfully. System maintains 100% compliance status across all 12 control areas.</p>
+                            <button class="liquid-btn text-xs mt-2 bg-purple-500/40 hover:bg-purple-500/60 w-full"><i class="fas fa-download mr-1"></i>Download Report</button>
+                            <p class="text-xs text-gray-500 mt-2">1 day ago</p>
+                        </div>
+                        <button class="text-gray-400 hover:text-purple-400 ml-2"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="liquid-btn w-full text-sm" id="closeNotificationsModal"><i class="fas fa-times mr-1"></i>Close</button>
+        </div>
+    </div>
+
+    <!-- Backup & Restore Modal -->
+    <div class="modal-overlay" id="backupRestoreModal">
+        <div class="modal-content max-w-lg">
+            <h2 class="text-2xl mb-4"><i class="fas fa-server text-blue-500 mr-2"></i>Backup & Restore</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Recent Backups</p><p class="text-sm">Full: 45 min ago (842 MB)</p><p class="text-sm">Incremental: 5 min ago (45 MB)</p></div>
+                <div class="grid grid-cols-2 gap-2"><button class="liquid-btn text-sm">Full Backup</button><button class="liquid-btn text-sm">Incremental</button></div>
+                <div class="grid grid-cols-2 gap-2"><button class="liquid-btn text-sm">Restore</button><button class="liquid-btn text-sm">Verify</button></div>
+            </div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('backupRestoreModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Performance Monitoring Modal -->
+    <div class="modal-overlay" id="performanceModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-gauge-high text-green-500 mr-2"></i>System Performance</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">CPU: 23%</p><div class="w-full bg-white/20 h-2 mt-1 rounded"><div class="bg-green-500 h-2 rounded" style="width:23%"></div></div></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Memory: 45%</p><div class="w-full bg-white/20 h-2 mt-1 rounded"><div class="bg-blue-500 h-2 rounded" style="width:45%"></div></div></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Disk: 67%</p><div class="w-full bg-white/20 h-2 mt-1 rounded"><div class="bg-orange-500 h-2 rounded" style="width:67%"></div></div></div>
+                <div class="grid grid-cols-2 gap-2"><button class="liquid-btn text-sm">Optimize</button><button class="liquid-btn text-sm">Clear Cache</button></div>
+            </div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('performanceModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Network Configuration Modal -->
+    <div class="modal-overlay" id="networkConfigModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-network-wired text-purple-500 mr-2"></i>Network Configuration</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Ethernet (eth0)</p><p class="text-sm">Status: Up | IP: 10.0.1.5 | MAC: 00:1A:2B:3C:4D:5E</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">DNS Configuration</p><p class="text-sm">Primary: 8.8.8.8 | Secondary: 8.8.4.4</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">VPN Status</p><p class="text-sm">Active | Connected | Speed: 125 Mbps</p></div>
+                <div class="grid grid-cols-2 gap-2"><button class="liquid-btn text-sm">Edit DNS</button><button class="liquid-btn text-sm">VPN Setup</button></div>
+            </div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('networkConfigModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- User Management Modal -->
+    <div class="modal-overlay" id="userManagementModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-users-cog text-indigo-500 mr-2"></i>User Management</h2>
+            <div class="space-y-3 max-h-64 overflow-auto">
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between"><span>admin</span><span class="badge-liquid bg-green-200/40 text-xs">Admin</span><button class="text-xs text-blue-500">Edit</button></div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between"><span>deploy_user</span><span class="badge-liquid bg-blue-200/40 text-xs">Operator</span><button class="text-xs text-blue-500">Edit</button></div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between"><span>audit_user</span><span class="badge-liquid bg-gray-200/40 text-xs">Viewer</span><button class="text-xs text-blue-500">Edit</button></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-3"><button class="liquid-btn text-sm">Add User</button><button class="liquid-btn text-sm">Manage Roles</button></div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('userManagementModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- API Keys Modal -->
+    <div class="modal-overlay" id="apiKeysModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-key text-red-500 mr-2"></i>API & Access Tokens</h2>
+            <div class="space-y-3 max-h-64 overflow-auto">
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold text-sm">Production API Key</p><p class="text-xs font-mono">sk_live_51A2B3C4D5E6F...***</p><button class="text-xs text-orange-500">Regenerate</button></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold text-sm">Development API Key</p><p class="text-xs font-mono">sk_test_51X2Y3Z4A5B6C...***</p><button class="text-xs text-orange-500">Regenerate</button></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold text-sm">OAuth 2.0 Token</p><p class="text-xs font-mono">oauth_token_abc123def456...***</p><button class="text-xs text-red-500">Revoke</button></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-3"><button class="liquid-btn text-sm">Generate New</button><button class="liquid-btn text-sm">View Activity</button></div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('apiKeysModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Database Maintenance Modal -->
+    <div class="modal-overlay" id="dbMaintenanceModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-database text-cyan-500 mr-2"></i>Database Maintenance</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Health Status: <span class="text-green-500">Optimal</span></p><p class="text-sm">Last check: 2 hours ago</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Replication Lag</p><p class="text-sm">Master → Replica 1: 0.5s | Master → Replica 2: 1.2s</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Query Performance</p><p class="text-sm">Avg Query Time: 45ms | Slow Queries: 3 (last hour)</p></div>
+                <div class="grid grid-cols-2 gap-2"><button class="liquid-btn text-sm">Optimize</button><button class="liquid-btn text-sm">Repair</button></div>
+                <button class="liquid-btn w-full text-sm">Full Health Check</button>
+            </div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('dbMaintenanceModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Log Management Modal -->
+    <div class="modal-overlay" id="logManagementModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-scroll text-orange-500 mr-2"></i>Log Management</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">System Logs</p><p class="text-sm">Size: 428 MB | Entries: 1.2M | Last Entry: 30s ago</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Application Logs</p><p class="text-sm">Size: 256 MB | Entries: 850K | Last Entry: 15s ago</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl"><p class="font-semibold">Security Logs</p><p class="text-sm">Size: 1.2 GB | Entries: 4.5M | Last Entry: 5s ago</p></div>
+                <div class="grid grid-cols-2 gap-2"><button class="liquid-btn text-sm">Rotate Logs</button><button class="liquid-btn text-sm">Archive</button></div>
+                <button class="liquid-btn w-full text-sm">Export All Logs</button>
+            </div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('logManagementModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Audit & Compliance Modal -->
+    <div class="modal-overlay" id="auditComplianceModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-gavel text-yellow-500 mr-2"></i>Audit & Compliance</h2>
+            <div class="space-y-3 max-h-64 overflow-auto">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500"><p class="font-semibold text-sm">PCI DSS Compliance</p><p class="text-xs">Status: <span class="text-green-500 font-bold">Compliant</span></p><p class="text-xs">Last Audit: 2024-03-20</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500"><p class="font-semibold text-sm">GDPR Compliance</p><p class="text-xs">Status: <span class="text-green-500 font-bold">Compliant</span></p><p class="text-xs">Last Audit: 2024-03-18</p></div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-yellow-500"><p class="font-semibold text-sm">ISO 27001 Certification</p><p class="text-xs">Status: <span class="text-yellow-500 font-bold">In Progress</span></p><p class="text-xs">Expected: 2024-06-30</p></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-3"><button class="liquid-btn text-sm">Audit Trail</button><button class="liquid-btn text-sm">Reports</button></div>
+            <button class="liquid-btn w-full mt-4" onclick="hideModal('auditComplianceModal')">Close</button>
+        </div>
+    </div>
+    
+    <!-- Tool Configuration Modal -->
+    <div class="modal-overlay" id="configureToolModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-tools mr-2"></i>Configure <span id="toolNameSpan">Tool</span></h2>
+            <div class="space-y-3" id="toolConfigForm"></div>
+            <div class="flex gap-3 mt-4">
+                <button class="liquid-btn flex-1" id="saveToolConfig">Save</button>
+                <button class="liquid-btn flex-1" id="closeToolConfig">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Management Modal -->
+    <div class="modal-overlay" id="manageDBModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-database text-blue-500 mr-2"></i>Database: <span id="dbNameSpan"></span></h2>
+            <div class="space-y-3" id="dbDetails"></div>
+            <div class="flex gap-3 mt-4">
+                <button class="liquid-btn flex-1" id="backupDBBtn">Backup</button>
+                <button class="liquid-btn flex-1" id="optimizeDBBtn">Optimize</button>
+                <button class="liquid-btn flex-1 liquid-btn-danger" id="repairDBBtn">Repair</button>
+            </div>
+            <button class="liquid-btn w-full mt-4" id="closeDBModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Compliance Detail Modal -->
+    <div class="modal-overlay" id="complianceDetailModal">
+        <div class="modal-content">
+            <h2 class="text-2xl mb-4"><i class="fas fa-gavel mr-2"></i><span id="complianceStandardSpan">PCI DSS</span> Details</h2>
+            <div id="complianceDetails" class="space-y-3"></div>
+            <button class="liquid-btn w-full mt-4" id="closeComplianceModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Restart Web Services Modal -->
+    <div class="modal-overlay" id="restartWebModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-server text-blue-500 mr-2"></i>Restart Web Services</h2>
+            <p class="text-sm mb-4 text-gray-300">This will restart all web services. Downtime: ~30 seconds.</p>
+            <div class="space-y-2 max-h-48 overflow-auto" id="webServicesList2">
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span>Nginx</span><span class="badge-liquid bg-green-200/40">Running</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span>Apache</span><span class="badge-liquid bg-red-200/40">Stopped</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span>Node.js</span><span class="badge-liquid bg-green-200/40">Running</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm" id="closeRestartWebModal">Cancel</button>
+                <button class="liquid-btn flex-1 text-sm liquid-btn-primary" id="confirmRestartWeb"><i class="fas fa-sync mr-1"></i>Restart All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restart Database Services Modal -->
+    <div class="modal-overlay" id="restartDBModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-database text-green-500 mr-2"></i>Restart Database Services</h2>
+            <p class="text-sm mb-4 text-gray-300">This will restart all database services. Replicas will be synced automatically.</p>
+            <div class="space-y-2 max-h-48 overflow-auto" id="dbServicesList2">
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span>MySQL</span><span class="badge-liquid bg-green-200/40">Running</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span>Redis</span><span class="badge-liquid bg-green-200/40">Running</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span>MongoDB</span><span class="badge-liquid bg-green-200/40">Running</span>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl flex justify-between items-center">
+                    <span>PostgreSQL</span><span class="badge-liquid bg-green-200/40">Running</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="liquid-btn flex-1 text-sm" id="closeRestartDBModal">Cancel</button>
+                <button class="liquid-btn flex-1 text-sm liquid-btn-primary" id="confirmRestartDB"><i class="fas fa-sync mr-1"></i>Restart All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Status Modal -->
+    <div class="modal-overlay" id="serviceStatusModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-heartbeat text-red-500 mr-2"></i>Service Status</h2>
+            <div class="space-y-3 max-h-64 overflow-auto">
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm">Web Stack</p>
+                    <p class="text-xs text-gray-400 mt-1">Nginx (1/1) | Apache (0/1) | Node.js (1/1)</p>
+                    <p class="text-xs text-green-500 mt-1"><i class="fas fa-check-circle mr-1"></i>Healthy: 2/3 services active</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm">Database Stack</p>
+                    <p class="text-xs text-gray-400 mt-1">MySQL | Redis | MongoDB | PostgreSQL</p>
+                    <p class="text-xs text-green-500 mt-1"><i class="fas fa-check-circle mr-1"></i>Healthy: All services active</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm">Security Stack</p>
+                    <p class="text-xs text-gray-400 mt-1">Firewall | IDS | WAF | Antivirus</p>
+                    <p class="text-xs text-green-500 mt-1"><i class="fas fa-check-circle mr-1"></i>Healthy: All services active</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm">Monitoring & Logging</p>
+                    <p class="text-xs text-gray-400 mt-1">Syslog | ELK Stack | Log Aggregator</p>
+                    <p class="text-xs text-green-500 mt-1"><i class="fas fa-check-circle mr-1"></i>Healthy: All services active</p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeServiceStatusModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Replication Settings Modal -->
+    <div class="modal-overlay" id="replicationSettingsModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-sync text-purple-500 mr-2"></i>Replication Settings</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="text-xs opacity-70 uppercase">Master Status</p>
+                    <p class="font-semibold mt-1 text-green-600"><i class="fas fa-circle text-green-500 mr-1"></i>Online • Bin-log: mysql-bin.000456 @ Position 1024567</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="text-xs opacity-70 uppercase">Replica 1 Status</p>
+                    <p class="font-semibold mt-1 text-green-600"><i class="fas fa-circle text-green-500 mr-1"></i>Connected • Lag: 0.5s</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="text-xs opacity-70 uppercase">Replica 2 Status</p>
+                    <p class="font-semibold mt-1 text-green-600"><i class="fas fa-circle text-green-500 mr-1"></i>Connected • Lag: 1.2s</p>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="liquid-btn text-sm"><i class="fas fa-plus mr-1"></i>Add Replica</button>
+                    <button class="liquid-btn text-sm"><i class="fas fa-sliders-h mr-1"></i>Configure</button>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeReplicationModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Backup Settings Modal -->
+    <div class="modal-overlay" id="backupSettingsModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-cog text-orange-500 mr-2"></i>Backup Settings</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">Backup Frequency</label>
+                    <select class="w-full">
+                        <option>Every 4 hours</option>
+                        <option selected>Every 6 hours</option>
+                        <option>Every 12 hours</option>
+                        <option>Daily</option>
+                    </select>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">Retention Policy</label>
+                    <select class="w-full">
+                        <option>7 days</option>
+                        <option>14 days</option>
+                        <option selected>30 days</option>
+                        <option>90 days</option>
+                    </select>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">Backup Destination</label>
+                    <input type="text" value="s3://backups-prod" class="w-full">
+                </div>
+            </div>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-save mr-1"></i>Save</button>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-left: 0.5rem; width: calc(50% - 0.25rem);" id="closeBackupSettingsModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Updates Check Modal -->
+    <div class="modal-overlay" id="updatesCheckModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-sync-alt text-blue-500 mr-2"></i>Check for Updates</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-blue-500/20 rounded-2xl">
+                    <p class="text-sm"><i class="fas fa-spinner fa-spin mr-2"></i>Checking for updates...</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-blue-500">
+                    <p class="font-semibold text-sm">Security Updates: 3 Available</p>
+                    <p class="text-xs text-gray-400 mt-1">System patches and security fixes</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-sm">Feature Updates: 1 Available</p>
+                    <p class="text-xs text-gray-400 mt-1">New dashboard features and UI improvements</p>
+                </div>
+            </div>
+            <button class="liquid-btn flex-1 mt-4 text-sm liquid-btn-primary" style="margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-download mr-1"></i>Update Now</button>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-left: 0.5rem; width: calc(50% - 0.25rem);" id="closeUpdatesCheckModal">Close</button>
+        </div>
+    </div>
+
+    <!-- General Settings Modal -->
+    <div class="modal-overlay" id="generalSettingsModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-sliders-h text-blue-500 mr-2"></i>General Settings</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">System Name</label>
+                    <input type="text" value="Production Server" class="w-full">
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">Time Zone</label>
+                    <select class="w-full">
+                        <option>UTC</option>
+                        <option selected>America/New_York</option>
+                        <option>Europe/London</option>
+                        <option>Asia/Tokyo</option>
+                    </select>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">System Hostname</label>
+                    <input type="text" value="securesphere-prod-01" class="w-full">
+                </div>
+            </div>
+            <button class="liquid-btn flex-1 mt-4 text-sm liquid-btn-primary" style="margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-save mr-1"></i>Save</button>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-left: 0.5rem; width: calc(50% - 0.25rem);" id="closeGeneralSettingsModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Compliance Standards Details Modal -->
+    <div class="modal-overlay" id="complianceStandardModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-certificate text-purple-500 mr-2"></i><span id="standardNameSpan">PCI DSS</span> Standard Details</h2>
+            <div class="space-y-2 max-h-64 overflow-auto" id="standardDetailsList">
+                <div class="p-2 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-xs">Requirement 1: Install Firewall</p>
+                    <p class="text-xs text-gray-400">Status: <span class="text-green-500">✓ Passed</span></p>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl border-l-4 border-green-500">
+                    <p class="font-semibold text-xs">Requirement 2: Change Defaults</p>
+                    <p class="text-xs text-gray-400">Status: <span class="text-green-500">✓ Passed</span></p>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl border-l-4 border-orange-500">
+                    <p class="font-semibold text-xs">Requirement 3: Protect Data</p>
+                    <p class="text-xs text-gray-400">Status: <span class="text-orange-500">⚠ Needs Review</span></p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeComplianceStandardModal">Close</button>
+        </div>
+    </div>
+
+    <!-- API Keys and OAuth Modal -->
+    <div class="modal-overlay" id="apiTokensModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-key text-red-500 mr-2"></i>API Keys & OAuth Tokens</h2>
+            <div class="space-y-3 max-h-64 overflow-auto">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">Production API Key</p>
+                    <p class="text-xs font-mono mt-1">sk_live_51A2B3C4D5E6F...***</p>
+                    <div class="flex gap-2 mt-2">
+                        <button class="text-xs px-2 py-1 bg-orange-500/40 hover:bg-orange-500/60 rounded">Regenerate</button>
+                        <button class="text-xs px-2 py-1 bg-red-500/40 hover:bg-red-500/60 rounded">Revoke</button>
+                    </div>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">OAuth 2.0 Token</p>
+                    <p class="text-xs font-mono mt-1">oauth_token_abc123def456...***</p>
+                    <div class="flex gap-2 mt-2">
+                        <button class="text-xs px-2 py-1 bg-orange-500/40 hover:bg-orange-500/60 rounded">Refresh</button>
+                        <button class="text-xs px-2 py-1 bg-red-500/40 hover:bg-red-500/60 rounded">Revoke</button>
+                    </div>
+                </div>
+            </div>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-plus mr-1"></i>Generate New</button>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-left: 0.5rem; width: calc(50% - 0.25rem);" id="closeApiTokensModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Audit Trail Modal -->
+    <div class="modal-overlay" id="auditTrailModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-history text-blue-500 mr-2"></i>Audit Trail</h2>
+            <div class="space-y-2 max-h-64 overflow-auto" id="auditTrailList">
+                <div class="p-2 bg-white/20 rounded-2xl text-xs">
+                    <p class="font-semibold">Admin - Backup Created</p>
+                    <p class="text-gray-400">2024-04-06 14:32:15 • 245 GB backed up</p>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl text-xs">
+                    <p class="font-semibold">System - Security Patch Applied</p>
+                    <p class="text-gray-400">2024-04-06 13:15:00 • CVE-2024-1234 fixed</p>
+                </div>
+                <div class="p-2 bg-white/20 rounded-2xl text-xs">
+                    <p class="font-semibold">Admin - User Account Created</p>
+                    <p class="text-gray-400">2024-04-06 11:45:30 • User: deploy_user</p>
+                </div>
+            </div>
+            <button class="liquid-btn w-full mt-4 text-sm" id="closeAuditTrailModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Compliance Report Modal -->
+    <div class="modal-overlay" id="complianceReportModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-file-pdf text-red-500 mr-2"></i>Compliance Report</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">PCI DSS Compliance Report</p>
+                    <p class="text-xs text-gray-400 mt-1">Last Generated: 2024-03-20</p>
+                    <p class="text-xs text-green-500 mt-1"><i class="fas fa-check-circle mr-1"></i>Full Compliance</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm">GDPR Compliance Report</p>
+                    <p class="text-xs text-gray-400 mt-1">Last Generated: 2024-03-18</p>
+                    <p class="text-xs text-green-500 mt-1"><i class="fas fa-check-circle mr-1"></i>Full Compliance</p>
+                </div>
+            </div>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-download mr-1"></i>Download</button>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-left: 0.5rem; width: calc(50% - 0.25rem);" id="closeComplianceReportModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-chart-bar text-indigo-500 mr-2"></i>Generate Reports</h2>
+            <div class="space-y-3">
+                <div class="form-group">
+                    <label class="text-sm mb-2">Report Type</label>
+                    <select class="w-full">
+                        <option>Security Report</option>
+                        <option>Performance Report</option>
+                        <option>Compliance Report</option>
+                        <option>Audit Log Report</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="text-sm mb-2">Date Range</label>
+                    <div class="flex gap-2">
+                        <input type="date" class="flex-1">
+                        <input type="date" class="flex-1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="text-sm mb-2">Format</label>
+                    <select class="w-full">
+                        <option>PDF</option>
+                        <option>CSV</option>
+                        <option>JSON</option>
+                    </select>
+                </div>
+            </div>
+            <button class="liquid-btn flex-1 mt-4 text-sm liquid-btn-primary" style="margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-file mr-1"></i>Generate</button>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-left: 0.5rem; width: calc(50% - 0.25rem);" id="closeReportModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-cog text-gray-500 mr-2"></i>System Configuration</h2>
+            <div class="space-y-3">
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <p class="font-semibold text-sm flex items-center justify-between">
+                        <span>Security Mode</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" checked>
+                            <div class="w-8 h-5 bg-gray-300 rounded-full peer peer-checked:bg-green-500"></div>
+                        </label>
+                    </p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">Log Level</label>
+                    <select class="w-full">
+                        <option>Debug</option>
+                        <option selected>Info</option>
+                        <option>Warning</option>
+                        <option>Error</option>
+                    </select>
+                </div>
+                <div class="p-3 bg-white/20 rounded-2xl">
+                    <label class="text-sm mb-2">Max Connections</label>
+                    <input type="number" value="1000" class="w-full">
+                </div>
+            </div>
+            <button class="liquid-btn flex-1 mt-4 text-sm liquid-btn-primary" style="margin-right: 0.5rem; width: calc(50% - 0.25rem);"><i class="fas fa-save mr-1"></i>Save</button>
+            <button class="liquid-btn flex-1 mt-4 text-sm" style="margin-left: 0.5rem; width: calc(50% - 0.25rem);" id="closeConfigModal">Close</button>
+        </div>
+    </div>
+
+    
+</body>
+<script src="app.js"></script>
+</html>
