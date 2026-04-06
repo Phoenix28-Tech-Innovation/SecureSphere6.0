@@ -1739,7 +1739,7 @@
         /* ===== FAB STYLING - FLOATING ACTION BUTTON ===== */
         .fab-button {
             position: fixed;
-            bottom: calc(100px + env(safe-area-inset-bottom, 12px));
+            top: calc(820px + env(safe-area-inset-bottom, 12px));
             left: 50%;
             transform: translateX(-50%);
             width: 56px;
@@ -1808,7 +1808,7 @@
         /* Sticky state when menu is open */
         .fab-button.sticky {
             position: fixed !important;
-            bottom: calc(100px + env(safe-area-inset-bottom, 12px)) !important;
+            top: calc(720px + env(safe-area-inset-bottom, 12px)) !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
             pointer-events: auto;

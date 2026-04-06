@@ -1,5 +1,4 @@
 
-
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', async function() {
             // Fast hydrate from saved cache if available (instant UI on refresh)
